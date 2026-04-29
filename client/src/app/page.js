@@ -1,27 +1,12 @@
-// "use client";
-
-// import { useEffect, useState } from "react";
-// import Link from "next/link";
-// import Image from "next/image";
-
-// //import { supabase } from "@/integrations/supabase/client";
-// import { Header } from "@/components/Header";
-// import { SiteFooter } from "@/components/Footer";
-// import { EventCard, resolveCover } from "@/components/EventCard";
-// import { Button } from "@/components/ui/Button";
-// import { CATEGORIES, CATEGORY_LABELS } from "@/lib/format";
-
-// //import heroImg from "@//hero-event.jpg";
-// import { ArrowRight, Sparkles } from "lucide-react";
-
-
-
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import Browse from "../pages/Browse.jsx";
+import SignedInHome from "../components/SignedInHome";
+import { useAuth } from "../hooks/use-auth";
 
 // ── Design tokens ────────────────────────────────────────────────────────────
 const tokens = {
@@ -34,6 +19,8 @@ const tokens = {
 
 // ── HERO SECTION ─────────────────────────────────────────────────────────────
 function HeroSection() {
+  const router = useRouter();
+  
   return (
     <section
       style={{
@@ -76,8 +63,8 @@ function HeroSection() {
           candlelit dinners and gallery openings to rooftop sets and sunrise yoga.
         </p>
         <div style={{ display: "flex", gap: "24px", alignItems: "center" }}>
-          <a
-            href="#"
+          <button
+            onClick={() => router.push('/Browse')}
             style={{
               background: tokens.black,
               color: tokens.white,
@@ -85,26 +72,29 @@ function HeroSection() {
               borderRadius: "999px",
               fontFamily: "'Georgia', serif",
               fontSize: "15px",
-              textDecoration: "none",
               fontWeight: 600,
               display: "flex",
               alignItems: "center",
               gap: "8px",
+              border: "none",
+              cursor: "pointer",
             }}
           >
             Browse events <span>→</span>
-          </a>
-          <a
-            href="#"
-            style={{
-              fontFamily: "'Georgia', serif",
-              fontSize: "15px",
-              color: tokens.black,
-              textDecoration: "none",
-            }}
-          >
-            Explore categories
-          </a>
+          </button>
+          <button
+  onClick={() => router.push('/categories')}  // Changed from scroll to navigation
+  style={{
+    background: "none",
+    border: "none",
+    fontFamily: "'Georgia', serif",
+    fontSize: "15px",
+    color: tokens.black,
+    cursor: "pointer",
+  }}
+>
+  Explore categories
+</button>
         </div>
       </div>
 
@@ -150,6 +140,7 @@ function HeroSection() {
             </div>
           </div>
           <button
+            onClick={() => router.push('/event/1')}
             style={{
               position: "absolute",
               bottom: "20px",
@@ -190,7 +181,17 @@ function HeroSection() {
 // ── CATEGORY FILTER BAR ───────────────────────────────────────────────────────
 function CategoryBar() {
   const [active, setActive] = useState("NOW SHOWING");
+  const router = useRouter();
   const cats = ["NOW SHOWING", "MUSIC", "FOOD & DRINK", "ART", "TECH", "WELLNESS", "NIGHTLIFE", "COMMUNITY"];
+
+  const handleCategoryClick = (cat) => {
+    setActive(cat);
+    if (cat !== "NOW SHOWING") {
+      router.push(`/Browse?category=${cat.toLowerCase()}`);
+    } else {
+      router.push('/Browse');
+    }
+  };
 
   return (
     <div
@@ -209,7 +210,7 @@ function CategoryBar() {
       {cats.map((cat) => (
         <button
           key={cat}
-          onClick={() => setActive(cat)}
+          onClick={() => handleCategoryClick(cat)}
           style={{
             background: "none",
             border: "none",
@@ -232,21 +233,22 @@ function CategoryBar() {
 
 // ── BROWSE BY CATEGORY ────────────────────────────────────────────────────────
 function BrowseByCategory() {
+  const router = useRouter();
   const categories = [
-    { n: "01", label: "Music" },
-    { n: "02", label: "Tech" },
-    { n: "03", label: "Food & Drink" },
-    { n: "04", label: "Art" },
-    { n: "05", label: "Sports" },
-    { n: "06", label: "Business" },
-    { n: "07", label: "Wellness" },
-    { n: "08", label: "Community" },
-    { n: "09", label: "Nightlife" },
-    { n: "10", label: "Other" },
+    { n: "01", label: "Music", slug: "music" },
+    { n: "02", label: "Tech", slug: "tech" },
+    { n: "03", label: "Food & Drink", slug: "food-drink" },
+    { n: "04", label: "Art", slug: "art" },
+    { n: "05", label: "Sports", slug: "sports" },
+    { n: "06", label: "Business", slug: "business" },
+    { n: "07", label: "Wellness", slug: "wellness" },
+    { n: "08", label: "Community", slug: "community" },
+    { n: "09", label: "Nightlife", slug: "nightlife" },
+    { n: "10", label: "Other", slug: "other" },
   ];
 
   return (
-    <section style={{ background: tokens.cream, padding: "72px 48px" }}>
+    <section id="categories" style={{ background: tokens.cream, padding: "72px 48px" }}>
       <div
         style={{
           display: "flex",
@@ -280,25 +282,27 @@ function BrowseByCategory() {
             Browse by category
           </h2>
         </div>
-        <a
-          href="#"
-          style={{
-            fontFamily: "sans-serif",
-            fontSize: "13px",
-            color: tokens.orange,
-            textDecoration: "none",
-            fontWeight: 600,
-          }}
-        >
-          See all →
-        </a>
+        <button
+  onClick={() => router.push('/categories')}  // Changed from '/Browse' to '/categories'
+  style={{
+    background: "none",
+    border: "none",
+    fontFamily: "sans-serif",
+    fontSize: "13px",
+    color: tokens.orange,
+    cursor: "pointer",
+    fontWeight: 600,
+  }}
+>
+  See all →
+</button>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "12px" }}>
         {categories.map((cat) => (
-          <a
+          <button
             key={cat.n}
-            href="#"
+            onClick={() => router.push(`/Browse?category=${cat.slug}`)}
             style={{
               background: tokens.white,
               borderRadius: "16px",
@@ -310,6 +314,9 @@ function BrowseByCategory() {
               gap: "32px",
               border: "1px solid #e8e3db",
               transition: "box-shadow 0.2s",
+              cursor: "pointer",
+              textAlign: "left",
+              width: "100%",
             }}
             onMouseEnter={(e) => (e.currentTarget.style.boxShadow = "0 4px 20px rgba(0,0,0,0.08)")}
             onMouseLeave={(e) => (e.currentTarget.style.boxShadow = "none")}
@@ -323,7 +330,7 @@ function BrowseByCategory() {
               </span>
               <span style={{ fontSize: "14px" }}>→</span>
             </div>
-          </a>
+          </button>
         ))}
       </div>
     </section>
@@ -332,6 +339,8 @@ function BrowseByCategory() {
 
 // ── EDITOR'S PICK ─────────────────────────────────────────────────────────────
 function EditorsPick() {
+  const router = useRouter();
+  
   return (
     <section
       style={{
@@ -358,7 +367,7 @@ function EditorsPick() {
             fontWeight: 600,
           }}
         >
-          EDITOR'S PICK
+          EDITOR&apos;S PICK
         </p>
         <h2
           style={{
@@ -401,8 +410,8 @@ function EditorsPick() {
           Step into a curated experience selected by our editors this week. Tap through to see full details,
           location, and how to attend.
         </p>
-        <a
-          href="#"
+        <button
+          onClick={() => router.push('/event/2')}
           style={{
             background: tokens.orange,
             color: tokens.white,
@@ -410,14 +419,14 @@ function EditorsPick() {
             borderRadius: "999px",
             fontFamily: "'Georgia', serif",
             fontSize: "15px",
-            textDecoration: "none",
+            border: "none",
             fontWeight: 600,
-            display: "inline-block",
+            cursor: "pointer",
             alignSelf: "flex-start",
           }}
         >
           View event
-        </a>
+        </button>
       </div>
     </section>
   );
@@ -426,29 +435,37 @@ function EditorsPick() {
 // ── DON'T MISS OUT ────────────────────────────────────────────────────────────
 const eventCards = [
   {
+    id: 3,
     month: "APR",
     day: "24",
     tag: "ART",
     img: "https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?w=600&q=80",
     title: "Abstract Forms Gallery Night",
+    slug: "abstract-forms-gallery-night"
   },
   {
+    id: 4,
     month: "APR",
     day: "25",
     tag: "SPORTS",
     img: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=600&q=80",
     title: "City Rooftop Run",
+    slug: "city-rooftop-run"
   },
   {
+    id: 5,
     month: "APR",
     day: "26",
     tag: "MUSIC",
     img: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600&q=80",
     title: "Late Night Jazz & Electric",
+    slug: "late-night-jazz-electric"
   },
 ];
 
 function DontMissOut() {
+  const router = useRouter();
+  
   return (
     <section style={{ background: tokens.cream, padding: "72px 48px", borderTop: "1px solid #e0dbd0" }}>
       <div
@@ -484,27 +501,28 @@ function DontMissOut() {
             Don't miss out
           </h2>
         </div>
-        <a
-          href="#"
+        <button
+          onClick={() => router.push('/Browse')}
           style={{
+            background: "none",
             fontFamily: "sans-serif",
             fontSize: "13px",
             color: tokens.black,
-            textDecoration: "none",
+            cursor: "pointer",
             border: "1px solid #ccc",
             padding: "10px 20px",
             borderRadius: "999px",
           }}
         >
           Browse all events
-        </a>
+        </button>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "20px" }}>
         {eventCards.map((card) => (
-          <a
+          <button
             key={card.day}
-            href="#"
+            onClick={() => router.push(`/event/${card.id}`)}
             style={{
               borderRadius: "20px",
               overflow: "hidden",
@@ -513,6 +531,10 @@ function DontMissOut() {
               position: "relative",
               display: "block",
               aspectRatio: "4/3",
+              border: "none",
+              cursor: "pointer",
+              padding: 0,
+              width: "100%",
             }}
           >
             <img
@@ -562,7 +584,7 @@ function DontMissOut() {
             >
               {card.tag}
             </div>
-          </a>
+          </button>
         ))}
       </div>
     </section>
@@ -571,6 +593,8 @@ function DontMissOut() {
 
 // ── HOST CTA ──────────────────────────────────────────────────────────────────
 function HostCTA() {
+  const router = useRouter();
+  
   return (
     <section style={{ background: tokens.cream, padding: "0 48px 72px" }}>
       <div
@@ -581,6 +605,8 @@ function HostCTA() {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
+          flexWrap: "wrap",
+          gap: "24px",
         }}
       >
         <div>
@@ -611,8 +637,8 @@ function HostCTA() {
             Sign in to publish events, manage tickets, and reach attendees who want to be there.
           </p>
         </div>
-        <a
-          href="#"
+        <button
+          onClick={() => router.push('/register')}
           style={{
             background: tokens.orange,
             color: tokens.white,
@@ -620,25 +646,48 @@ function HostCTA() {
             borderRadius: "999px",
             fontFamily: "'Georgia', serif",
             fontSize: "16px",
-            textDecoration: "none",
+            border: "none",
             fontWeight: 700,
+            cursor: "pointer",
             whiteSpace: "nowrap",
             flexShrink: 0,
-            marginLeft: "40px",
           }}
         >
           Get started
-        </a>
+        </button>
       </div>
     </section>
   );
 }
 
-// ── PAGE (imports Header & Footer) ────────────────────────────────────────────
+// ── PAGE ──────────────────────────────────────────────────────────────────────
 export default function Page() {
+  const { user, isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: tokens.cream }}>
+        <div style={{ textAlign: "center" }}>
+          <p style={{ fontFamily: "sans-serif", fontSize: "16px", color: "#999" }}>Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show signed-in home if user is authenticated
+  if (isAuthenticated && user) {
+    // Extract user name from localStorage or Supabase user data
+    let userName = "User";
+    if (typeof user === 'object') {
+      userName = user.user_metadata?.full_name || user.email?.split("@")[0] || user.name || user.username || "User";
+    }
+    return <SignedInHome userName={userName} />;
+  }
+
+  // Show landing page for unauthenticated users
   return (
     <div style={{ minHeight: "100vh", background: tokens.cream }}>
-      <Header />
+      {/* <Header /> */}
       <main>
         <HeroSection />
         <CategoryBar />
@@ -650,4 +699,4 @@ export default function Page() {
       <Footer />
     </div>
   );
-}            
+}

@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 const tokens = {
   cream: "#F5F0E8",
@@ -9,7 +11,7 @@ const tokens = {
   orange: "#E8440A",
 };
 
-function Field({ label, type = "text", placeholder }) {
+function Field({ label, type = "text", placeholder, value, onChange }) {
   const [focused, setFocused] = useState(false);
   return (
     <div style={{ marginBottom: "20px" }}>
@@ -28,6 +30,8 @@ function Field({ label, type = "text", placeholder }) {
       <input
         type={type}
         placeholder={placeholder}
+        value={value}
+        onChange={onChange}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
         style={{
@@ -49,6 +53,72 @@ function Field({ label, type = "text", placeholder }) {
 }
 
 export default function RegisterPage() {
+  const router = useRouter();
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const validateForm = () => {
+    if (!name.trim()) {
+      setError("Name is required");
+      return false;
+    }
+    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setError("Please enter a valid email");
+      return false;
+    }
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters");
+      return false;
+    }
+    return true;
+  };
+
+  const handleInputChange = (setter) => (e) => {
+    setter(e.target.value);
+    if (error) setError("");
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    
+    if (!validateForm()) {
+      return;
+    }
+    
+    setLoading(true);
+
+    try {
+      const response = await fetch('/api/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, email, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Store token and user data
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        
+        // Redirect to profile page
+        router.push('/profile');
+      } else {
+        setError(data.error || 'Registration failed');
+      }
+    } catch (err) {
+      setError('Network error. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div style={{ display: "flex", minHeight: "100vh", background: tokens.cream }}>
 
@@ -85,18 +155,16 @@ export default function RegisterPage() {
           }}
         >
           {/* Logo */}
-          <a href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: "2px" }}>
+          <Link href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: "2px" }}>
             <span style={{ fontFamily: "'Georgia', serif", fontWeight: 700, fontSize: "22px", color: tokens.white }}>
               Eventra
             </span>
             <span style={{ color: tokens.orange, fontSize: "28px", lineHeight: 1, marginTop: "-4px" }}>.</span>
-          </a>
+          </Link>
 
           {/* Headline */}
           <div>
-            <p style={{ fontFamily: "sans-serif", fontSize: "11px", letterSpacing: "2px", color: "rgba(255,255,255,0.6)", margin: "0 0 20px", fontWeight: 600 }}>
-              ISSUE 01
-            </p>
+            
             <h2
               style={{
                 fontFamily: "'Georgia', serif",
@@ -151,6 +219,19 @@ export default function RegisterPage() {
           Save events, book tickets, and host your own.
         </p>
 
+        {error && (
+          <div style={{
+            background: "#fee",
+            color: "#c0392b",
+            padding: "12px",
+            borderRadius: "8px",
+            marginBottom: "20px",
+            fontSize: "14px",
+          }}>
+            {error}
+          </div>
+        )}
+
         {/* Google */}
         <button
           style={{
@@ -187,28 +268,51 @@ export default function RegisterPage() {
           <div style={{ flex: 1, height: "1px", background: "#e0dbd0" }} />
         </div>
 
-        <Field label="Name" type="text" placeholder="Your name" />
-        <Field label="Email" type="email" placeholder="you@example.com" />
-        <Field label="Password" type="password" placeholder="At least 8 characters" />
+        <form onSubmit={handleSubmit}>
+          <Field 
+            label="Name" 
+            type="text" 
+            placeholder="Your name" 
+            value={name}
+            onChange={handleInputChange(setName)}
+          />
+          <Field 
+            label="Email" 
+            type="email" 
+            placeholder="you@example.com" 
+            value={email}
+            onChange={handleInputChange(setEmail)}
+          />
+          <Field 
+            label="Password" 
+            type="password" 
+            placeholder="••••••••" 
+            value={password}
+            onChange={handleInputChange(setPassword)}
+          />
 
-        <button
-          style={{
-            width: "100%",
-            padding: "16px",
-            borderRadius: "10px",
-            border: "none",
-            background: tokens.black,
-            color: tokens.white,
-            fontFamily: "'Georgia', serif",
-            fontSize: "16px",
-            fontWeight: 700,
-            cursor: "pointer",
-            marginTop: "4px",
-            marginBottom: "24px",
-          }}
-        >
-          Create account
-        </button>
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              width: "100%",
+              padding: "16px",
+              borderRadius: "10px",
+              border: "none",
+              background: tokens.black,
+              color: tokens.white,
+              fontFamily: "'Georgia', serif",
+              fontSize: "16px",
+              fontWeight: 700,
+              cursor: loading ? "not-allowed" : "pointer",
+              marginTop: "4px",
+              marginBottom: "24px",
+              opacity: loading ? 0.7 : 1,
+            }}
+          >
+            {loading ? "Creating account..." : "Create account"}
+          </button>
+        </form>
 
         <p style={{ fontFamily: "sans-serif", fontSize: "14px", color: "#888", textAlign: "center", margin: 0 }}>
           Already have an account?{" "}

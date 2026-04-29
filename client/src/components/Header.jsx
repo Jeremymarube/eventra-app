@@ -1,20 +1,39 @@
 "use client";
 
+import Link from "next/link";
+import { useRouter, usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+
 const tokens = {
   cream: "#F5F0E8",
   black: "#1a1a1a",
   white: "#ffffff",
   orange: "#E8440A",
+  deepBlue: "#0D1B2A",
+  blueBorder: "rgba(255,255,255,0.08)",
+  blueMuted: "rgba(255,255,255,0.5)",
 };
 
 export default function Header() {
+  const pathname = usePathname();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    setIsLoggedIn(!!token);
+  }, [pathname]);
+
+  if (isLoggedIn) {
+    return null;
+  }
+
   return (
     <header
       style={{
-        background: tokens.cream,
-        borderBottom: "1px solid #e0dbd0",
-        padding: "0 48px",
-        height: "64px",
+        background: tokens.deepBlue,
+        borderBottom: `1px solid ${tokens.blueBorder}`,
+        padding: "0 max(16px, 3vw)",
+        minHeight: "64px",
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
@@ -24,78 +43,137 @@ export default function Header() {
       }}
     >
       {/* Logo */}
-      <a href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: "2px" }}>
+      <Link
+        href="/"
+        style={{
+          textDecoration: "none",
+          display: "flex",
+          alignItems: "center",
+          gap: "2px",
+          flexShrink: 0,
+        }}
+      >
         <span
           style={{
             fontFamily: "'Georgia', 'Times New Roman', serif",
             fontWeight: 700,
-            fontSize: "22px",
-            color: tokens.black,
+            fontSize: "clamp(18px, 5vw, 22px)",
+            color: tokens.cream,
             letterSpacing: "-0.5px",
           }}
         >
           Eventra
         </span>
-        <span style={{ color: tokens.orange, fontSize: "28px", lineHeight: 1, marginTop: "-4px" }}>.</span>
-      </a>
+        <span
+          style={{
+            color: tokens.orange,
+            fontSize: "clamp(20px, 5vw, 28px)",
+            lineHeight: 1,
+            marginTop: "-4px",
+          }}
+        >
+          .
+        </span>
+      </Link>
 
-      {/* Nav */}
-      <nav style={{ display: "flex", gap: "36px", alignItems: "center" }}>
-        {["Browse", "Categories", "About"].map((item) => (
-          <a
-            key={item}
-            href="#"
-            style={{
-              fontFamily: "'Georgia', serif",
-              fontSize: "15px",
-              color: tokens.black,
-              textDecoration: "none",
-              opacity: 0.8,
-            }}
-          >
-            {item}
-          </a>
-        ))}
+      {/* Desktop Nav */}
+      <nav
+        style={{
+          display: "flex",
+          gap: "24px",
+          alignItems: "center",
+          marginLeft: "32px",
+          marginRight: "auto",
+        }}
+      >
+        <NavLink href="/browse">Browse</NavLink>
+        <NavLink href="/categories">Categories</NavLink>
+        <NavLink href="/about">About</NavLink>
       </nav>
 
-      {/* Right actions */}
-      <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
+      {/* Right Actions */}
+      <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
         <button
-          style={{ background: "none", border: "none", cursor: "pointer", padding: 0, color: tokens.black }}
+          style={{
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            padding: 0,
+            color: tokens.blueMuted,
+            transition: "color 0.2s",
+          }}
           aria-label="Search"
+          onMouseEnter={(e) => (e.currentTarget.style.color = tokens.cream)}
+          onMouseLeave={(e) => (e.currentTarget.style.color = tokens.blueMuted)}
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
             <circle cx="11" cy="11" r="8" />
             <path d="m21 21-4.35-4.35" />
           </svg>
         </button>
-        <a
-          href="#"
+
+        <Link
+          href="/login"
           style={{
             fontFamily: "'Georgia', serif",
-            fontSize: "15px",
-            color: tokens.black,
+            fontSize: "clamp(13px, 2vw, 15px)",
+            color: tokens.blueMuted,
             textDecoration: "none",
+            transition: "color 0.2s",
           }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = tokens.cream)}
+          onMouseLeave={(e) => (e.currentTarget.style.color = tokens.blueMuted)}
         >
           Sign in
-        </a>
-        <a
-          href="#"
+        </Link>
+
+        <Link
+          href="/register"
           style={{
-            background: tokens.black,
-            color: tokens.white,
-            padding: "10px 20px",
+            background: tokens.orange,
+            border: "none",
             borderRadius: "999px",
+            padding: "8px 18px",
             fontFamily: "'Georgia', serif",
-            fontSize: "14px",
+            fontSize: "clamp(12px, 2vw, 14px)",
+            cursor: "pointer",
+            color: tokens.white,
             textDecoration: "none",
-            fontWeight: 600,
+            display: "inline-block",
+            transition: "opacity 0.2s",
           }}
+          onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.85")}
+          onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
         >
-          Get started
-        </a>
+          Sign up
+        </Link>
       </div>
     </header>
+  );
+}
+
+function NavLink({ href, children }) {
+  return (
+    <Link
+      href={href}
+      style={{
+        fontFamily: "'Georgia', serif",
+        fontSize: "clamp(13px, 2vw, 15px)",
+        color: tokens.blueMuted,
+        textDecoration: "none",
+        transition: "color 0.2s",
+      }}
+      onMouseEnter={(e) => (e.currentTarget.style.color = tokens.cream)}
+      onMouseLeave={(e) => (e.currentTarget.style.color = tokens.blueMuted)}
+    >
+      {children}
+    </Link>
   );
 }

@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 const tokens = {
   cream: "#F5F0E8",
@@ -9,7 +11,7 @@ const tokens = {
   orange: "#E8440A",
 };
 
-function Field({ label, type = "text", placeholder }) {
+function Field({ label, type = "text", placeholder, value, onChange }) {
   const [focused, setFocused] = useState(false);
   return (
     <div style={{ marginBottom: "20px" }}>
@@ -28,6 +30,8 @@ function Field({ label, type = "text", placeholder }) {
       <input
         type={type}
         placeholder={placeholder}
+        value={value}
+        onChange={onChange}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
         style={{
@@ -49,6 +53,47 @@ function Field({ label, type = "text", placeholder }) {
 }
 
 export default function LoginPage() {
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Store token and user data
+        console.log("API response:", data);
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        
+        // Redirect to profile page
+        //router.push('/home');
+         window.location.href = '/home';
+      } else {
+        setError(data.error || 'Login failed');
+      }
+    } catch (err) {
+      setError('Network error. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div style={{ display: "flex", minHeight: "100vh", background: tokens.cream }}>
 
@@ -85,18 +130,18 @@ export default function LoginPage() {
           }}
         >
           {/* Logo */}
-          <a href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: "2px" }}>
+          <Link href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: "2px" }}>
             <span style={{ fontFamily: "'Georgia', serif", fontWeight: 700, fontSize: "22px", color: tokens.white }}>
               Eventra
             </span>
             <span style={{ color: tokens.orange, fontSize: "28px", lineHeight: 1, marginTop: "-4px" }}>.</span>
-          </a>
+          </Link>
 
           {/* Headline */}
           <div>
-            <p style={{ fontFamily: "sans-serif", fontSize: "11px", letterSpacing: "2px", color: "rgba(255,255,255,0.6)", margin: "0 0 20px", fontWeight: 600 }}>
+            {/* <p style={{ fontFamily: "sans-serif", fontSize: "11px", letterSpacing: "2px", color: "rgba(255,255,255,0.6)", margin: "0 0 20px", fontWeight: 600 }}>
               ISSUE 01
-            </p>
+            </p> */}
             <h2
               style={{
                 fontFamily: "'Georgia', serif",
@@ -112,7 +157,7 @@ export default function LoginPage() {
             </h2>
             <p style={{ fontFamily: "sans-serif", fontSize: "14px", color: "rgba(255,255,255,0.7)", lineHeight: 1.6, margin: 0 }}>
               Save what catches your eye. Book what moves you.<br />
-              Discover what you didn't know you'd love.
+              Discover what you didn&apos;t know you&apos;d love.
             </p>
           </div>
 
@@ -151,6 +196,19 @@ export default function LoginPage() {
           Continue where you left off.
         </p>
 
+        {error && (
+          <div style={{
+            background: "#fee",
+            color: "#c0392b",
+            padding: "12px",
+            borderRadius: "8px",
+            marginBottom: "20px",
+            fontSize: "14px",
+          }}>
+            {error}
+          </div>
+        )}
+
         {/* Google */}
         <button
           style={{
@@ -187,27 +245,44 @@ export default function LoginPage() {
           <div style={{ flex: 1, height: "1px", background: "#e0dbd0" }} />
         </div>
 
-        <Field label="Email" type="email" placeholder="you@example.com" />
-        <Field label="Password" type="password" placeholder="At least 8 characters" />
+        <form onSubmit={handleSubmit}>
+          <Field 
+            label="Email" 
+            type="email" 
+            placeholder="you@example.com" 
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <Field 
+            label="Password" 
+            type="password" 
+            placeholder="Your password" 
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
 
-        <button
-          style={{
-            width: "100%",
-            padding: "16px",
-            borderRadius: "10px",
-            border: "none",
-            background: tokens.black,
-            color: tokens.white,
-            fontFamily: "'Georgia', serif",
-            fontSize: "16px",
-            fontWeight: 700,
-            cursor: "pointer",
-            marginTop: "4px",
-            marginBottom: "24px",
-          }}
-        >
-          Sign in
-        </button>
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              width: "100%",
+              padding: "16px",
+              borderRadius: "10px",
+              border: "none",
+              background: tokens.black,
+              color: tokens.white,
+              fontFamily: "'Georgia', serif",
+              fontSize: "16px",
+              fontWeight: 700,
+              cursor: loading ? "not-allowed" : "pointer",
+              marginTop: "4px",
+              marginBottom: "24px",
+              opacity: loading ? 0.7 : 1,
+            }}
+          >
+            {loading ? "Signing in..." : "Sign in"}
+          </button>
+        </form>
 
         <p style={{ fontFamily: "sans-serif", fontSize: "14px", color: "#888", textAlign: "center", margin: 0 }}>
           New here?{" "}

@@ -2,6 +2,10 @@ const tokens = {
   cream: "#F5F0E8",
   black: "#1a1a1a",
   orange: "#E8440A",
+  deepBlue: "#0D1B2A",
+  blueBorder: "rgba(255,255,255,0.08)",
+  blueMuted: "rgba(255,255,255,0.4)",
+  blueSubtle: "rgba(255,255,255,0.6)",
 };
 
 const cols = [
@@ -21,25 +25,64 @@ const cols = [
 
 export default function Footer() {
   return (
-    <footer style={{ background: tokens.cream, borderTop: "1px solid #e0dbd0", padding: "64px 48px 40px" }}>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: "48px", marginBottom: "64px" }}>
+    <footer
+      style={{
+        background: tokens.deepBlue,
+        borderTop: `1px solid ${tokens.blueBorder}`,
+        padding: "clamp(32px, 8vw, 64px) max(16px, 3vw)",
+      }}
+    >
+      {/* Main content grid */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+          gap: "clamp(32px, 5vw, 48px)",
+          marginBottom: "clamp(32px, 5vw, 64px)",
+        }}
+      >
         {/* Brand column */}
         <div>
-          <div style={{ display: "flex", alignItems: "center", gap: "2px", marginBottom: "20px" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "2px",
+              marginBottom: "clamp(12px, 3vw, 20px)",
+            }}
+          >
             <span
               style={{
                 fontFamily: "'Georgia', serif",
                 fontWeight: 700,
-                fontSize: "22px",
-                color: tokens.black,
+                fontSize: "clamp(18px, 4vw, 22px)",
+                color: tokens.cream,
               }}
             >
               Eventra
             </span>
-            <span style={{ color: tokens.orange, fontSize: "28px", lineHeight: 1, marginTop: "-4px" }}>.</span>
+            <span
+              style={{
+                color: tokens.orange,
+                fontSize: "clamp(20px, 4vw, 28px)",
+                lineHeight: 1,
+                marginTop: "-4px",
+              }}
+            >
+              .
+            </span>
           </div>
-          <p style={{ fontFamily: "sans-serif", fontSize: "13px", color: "#888", lineHeight: 1.6, margin: 0 }}>
-            Discover events worth showing up for. From intimate dinners to citywide festivals.
+          <p
+            style={{
+              fontFamily: "sans-serif",
+              fontSize: "clamp(12px, 2vw, 13px)",
+              color: tokens.blueMuted,
+              lineHeight: 1.6,
+              margin: 0,
+            }}
+          >
+            Discover events worth showing up for. From intimate dinners to
+            citywide festivals.
           </p>
         </div>
 
@@ -49,26 +92,38 @@ export default function Footer() {
             <p
               style={{
                 fontFamily: "sans-serif",
-                fontSize: "10px",
+                fontSize: "clamp(10px, 2vw, 10px)",
                 letterSpacing: "2px",
-                color: "#aaa",
-                margin: "0 0 20px",
+                color: tokens.blueMuted,
+                margin: "0 0 clamp(12px, 3vw, 20px)",
                 fontWeight: 600,
               }}
             >
               {col.heading}
             </p>
-            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "clamp(8px, 2vw, 12px)",
+              }}
+            >
               {col.links.map((link) => (
                 <a
                   key={link}
                   href="#"
                   style={{
                     fontFamily: "sans-serif",
-                    fontSize: "14px",
-                    color: tokens.black,
+                    fontSize: "clamp(12px, 2vw, 14px)",
+                    color: tokens.blueSubtle,
                     textDecoration: "none",
-                    opacity: 0.8,
+                    transition: "color 0.2s",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = tokens.cream;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = tokens.blueSubtle;
                   }}
                 >
                   {link}
@@ -82,18 +137,23 @@ export default function Footer() {
       {/* Bottom bar */}
       <div
         style={{
-          borderTop: "1px solid #e0dbd0",
-          paddingTop: "24px",
+          borderTop: `1px solid ${tokens.blueBorder}`,
+          paddingTop: "clamp(16px, 3vw, 24px)",
           display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
+          flexDirection: "column",
+          gap: "12px",
         }}
       >
-        <p style={{ fontFamily: "sans-serif", fontSize: "12px", color: "#aaa", margin: 0 }}>
+        <p
+          style={{
+            fontFamily: "sans-serif",
+            fontSize: "clamp(11px, 2vw, 12px)",
+            color: tokens.blueMuted,
+            margin: 0,
+            textAlign: "center",
+          }}
+        >
           © 2026 Eventra. Made for people who show up.
-        </p>
-        <p style={{ fontFamily: "sans-serif", fontSize: "12px", color: "#aaa", margin: 0 }}>
-          Issue No. 01 — Volume 2026
         </p>
       </div>
     </footer>
