@@ -194,7 +194,7 @@ function SettingsTab({ user, onUpdate }) {
     const token = localStorage.getItem('token');
 
     try {
-      const response = await fetch('/api/profile', {
+      const response = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/profile', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -330,7 +330,7 @@ function SettingsTab({ user, onUpdate }) {
             if (!confirm('Delete your account? This action cannot be undone.')) return;
             const token = localStorage.getItem('token');
             try {
-              const res = await fetch('/api/profile', {
+              const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/profile', {
                 method: 'DELETE',
                 headers: { Authorization: `Bearer ${token}` },
               });
@@ -366,7 +366,7 @@ export default function ProfilePage() {
 
   const fetchProfile = async (token) => {
     try {
-      const response = await fetch('/api/profile', {
+      const response = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/profile', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -392,7 +392,7 @@ export default function ProfilePage() {
     setBookingsLoading(true);
     setError("");
     try {
-      const response = await fetch('/api/bookings', {
+      const response = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/bookings', {
         headers: {
           'Authorization': `Bearer ${token}`
         }

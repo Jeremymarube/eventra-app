@@ -10,7 +10,7 @@ export default function EventsPage() {
   const fetchEvents = useCallback(async () => {
     try {
       // Using /api/events will be proxied to Flask by Next.js
-      const response = await fetch('/api/events');
+      const response = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/events');
       if (!response.ok) throw new Error('Failed to fetch events');
       const data = await response.json();
       setEvents(data);

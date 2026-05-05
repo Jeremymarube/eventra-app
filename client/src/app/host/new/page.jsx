@@ -181,7 +181,7 @@ export default function CreateEventPage() {
     setError('');
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/events/generate-description', {
+      const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/events/generate-description', {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,

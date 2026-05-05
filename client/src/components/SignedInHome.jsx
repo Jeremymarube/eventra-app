@@ -331,7 +331,7 @@ function UpNextSection() {
     const fetchUpcoming = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch('/api/bookings', {
+        const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/bookings', {
           headers: token ? { Authorization: `Bearer ${token}` } : {}
         });
         if (res.ok) {
@@ -621,7 +621,7 @@ function SavedSection() {
     const fetchSaved = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch('/api/saved-events', {
+        const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/saved-events', {
           headers: token ? { Authorization: `Bearer ${token}` } : {}
         });
         if (res.ok) {

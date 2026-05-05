@@ -39,7 +39,7 @@ export default function EventDetailPage() {
   const fetchCurrentUser = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/me', {
+      const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/api/me', {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
