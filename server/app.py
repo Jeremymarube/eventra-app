@@ -796,6 +796,13 @@ def create_app():
             'revenue_currency': event.currency
         })
     
+    # Google Search Console verification
+    @app.route('/google-site-verification', methods=['GET'])
+    def google_verification():
+        from flask import Response
+        html = '<html><head><meta name="google-site-verification" content="IT5C_MlZ_ZWPzcn02cGW-BTmyGZKoagrQL7af1v-gz0" /></head><body></body></html>'
+        return Response(html, mimetype='text/html')
+
     # Home route
     @app.route('/api', methods=['GET'])
     def home():
