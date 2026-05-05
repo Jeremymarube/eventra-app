@@ -87,7 +87,7 @@ export default function LoginPage() {
         console.log("API response:", data);
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
-        window.location.href = '/home';
+        window.location.href = '/';
       } else {
         setError(data.error || 'Login failed');
       }
