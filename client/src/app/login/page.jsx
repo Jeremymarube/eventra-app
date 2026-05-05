@@ -214,7 +214,7 @@ export default function LoginPage() {
 
         {/* Google */}
         <button
-          onClick={() => window.location.href = 'http://localhost:5000/api/auth/google/login'}
+          onClick={() => window.location.href = 'https://eventra-api-bd4i.onrender.com/api/auth/google/login'}
           style={{
             width: "100%",
             padding: "14px",
