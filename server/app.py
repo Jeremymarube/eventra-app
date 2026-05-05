@@ -26,7 +26,7 @@ def create_app():
     
     # Configure CORS for development (allow Next.js to connect)
     CORS(app, origins=[
-    "http://localhost:3000",
+    "https://eventra-app-koyx.vercel.app",
     "http://localhost:3001",
     "https://eventra-app-koyx.vercel.app"
 ], supports_credentials=True)
@@ -99,7 +99,7 @@ def create_app():
             user_info = token.get('userinfo')
 
             if not user_info:
-                return redirect('http://localhost:3000/login?error=Failed to get user info from Google')
+                return redirect('https://eventra-app-koyx.vercel.app/login?error=Failed to get user info from Google')
 
             # Check if user already exists by email
             user = User.query.filter_by(email=user_info['email']).first()
@@ -136,7 +136,7 @@ def create_app():
 
             # Redirect to Next.js with token and user info
             frontend_url = (
-                f"http://localhost:3000/auth/callback"
+                f"https://eventra-app-koyx.vercel.app/auth/callback"
                 f"?token={jwt_token}"
                 f"&name={user.username}"
                 f"&email={user.email}"
@@ -145,7 +145,7 @@ def create_app():
             return redirect(frontend_url)
 
         except Exception as e:
-            return redirect(f'http://localhost:3000/login?error={str(e)}')
+            return redirect(f'https://eventra-app-koyx.vercel.app/login?error={str(e)}')
 
     # ─── STANDARD AUTH ENDPOINTS ─────────────────────────────────────────────
 
