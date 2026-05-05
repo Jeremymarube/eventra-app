@@ -13,6 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
+  verification: {
+    google: 'IT5C_MlZ_ZWPzcn02cGW-BTmyGZKoagrQL7af1v-gz0',
+  },
   title: "Eventra - Events Worth Showing Up For",
   description: "Discover and host events worth showing up for",
 };
