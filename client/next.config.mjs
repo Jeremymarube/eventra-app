@@ -6,11 +6,11 @@ const nextConfig = {
     return [
       {
         source: '/api/:path*',
-        destination: 'http://localhost:5000/api/:path*',
+        destination: 'https://eventra-api-bd4i.onrender.com/api/:path*',
       },
       {
         source: '/static/:path*',
-        destination: 'http://localhost:5000/static/:path*',
+        destination: 'https://eventra-api-bd4i.onrender.com/static/:path*',
       },
     ];
   },
