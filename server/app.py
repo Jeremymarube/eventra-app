@@ -76,6 +76,13 @@ def create_app():
         
         return decorated
     
+    # Root route
+    @app.route('/', methods=['GET'])
+    def index():
+        from flask import Response
+        html = '<html><head><title>Eventra API</title></head><body><h1>Eventra API</h1><p>Backend service for Eventra event booking platform.</p></body></html>'
+        return Response(html, mimetype='text/html')
+
     # Health check endpoint
     @app.route('/api/health', methods=['GET'])
     def health():
