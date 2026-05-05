@@ -24,6 +24,7 @@ export default function EventDetailPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [bookingLoading, setBookingLoading] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
     // Check if logged in
@@ -31,9 +32,24 @@ export default function EventDetailPage() {
     if (token) {
       setIsLoggedIn(true);
     }
-
+    if (token) fetchCurrentUser();
     fetchEvent();
   }, [eventId]);
+
+  const fetchCurrentUser = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/me', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setCurrentUser(data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch current user', err);
+    }
+  };
 
   const fetchEvent = async () => {
     try {
@@ -70,7 +86,6 @@ export default function EventDetailPage() {
       console.error(err);
     }
   };
-
   const handleSave = async () => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -245,7 +260,7 @@ export default function EventDetailPage() {
                   fontWeight: 600,
                 }}
               >
-                {new Date(event.starts_at).toLocaleDateString("en-US", { weekday: "uppercase" })}
+                {new Date(event.starts_at).toLocaleDateString("en-US", { weekday: "long" }).toUpperCase()}
               </span>
             </div>
             <h1
@@ -451,7 +466,7 @@ export default function EventDetailPage() {
             )}
 
             {/* Save / Share row */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+            <div className="responsive-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
               <button
                 onClick={handleSave}
                 style={{
@@ -504,6 +519,100 @@ export default function EventDetailPage() {
                 ↗ Share
               </button>
             </div>
+            {/* Host actions: Edit / Cancel / Delete */}
+            {isLoggedIn && currentUser && event.host_id === currentUser.id && (
+              <div style={{ marginTop: "16px", display: "flex", gap: "8px" }}>
+                <Link
+                  href={`/host/edit/${event.id}`}
+                  style={{
+                    padding: "12px 18px",
+                    borderRadius: "8px",
+                    border: "1px solid #d8d3cb",
+                    background: "none",
+                    color: tokens.black,
+                    textDecoration: "none",
+                    fontFamily: "sans-serif",
+                    fontSize: "13px",
+                    fontWeight: 600,
+                  }}
+                >
+                  Edit
+                </Link>
+                <button
+                  onClick={async () => {
+                    if (!confirm('Cancel this event? This will mark it cancelled.')) return;
+                    try {
+                      const token = localStorage.getItem('token');
+                      const res = await fetch(`/api/events/${event.id}`, {
+                        method: 'PUT',
+                        headers: {
+                          'Authorization': `Bearer ${token}`,
+                          'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ status: 'cancelled', is_published: false }),
+                      });
+                      if (res.ok) {
+                        // refresh event
+                        fetchEvent();
+                      } else {
+                        const data = await res.json();
+                        alert(data.error || 'Failed to cancel event');
+                      }
+                    } catch (err) {
+                      console.error(err);
+                      alert('Network error');
+                    }
+                  }}
+                  style={{
+                    padding: "12px 18px",
+                    borderRadius: "8px",
+                    border: "1px solid #f0d9d6",
+                    background: "#f6f0ef",
+                    color: "#c0392b",
+                    fontFamily: "sans-serif",
+                    fontSize: "13px",
+                    fontWeight: 600,
+                    cursor: "pointer",
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={async () => {
+                    if (!confirm('Delete this event permanently? This cannot be undone.')) return;
+                    try {
+                      const token = localStorage.getItem('token');
+                      const res = await fetch(`/api/events/${event.id}`, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': `Bearer ${token}` },
+                      });
+                      if (res.ok) {
+                        window.location.href = '/host';
+                      } else {
+                        const data = await res.json();
+                        alert(data.error || 'Failed to delete event');
+                      }
+                    } catch (err) {
+                      console.error(err);
+                      alert('Network error');
+                    }
+                  }}
+                  style={{
+                    padding: "12px 18px",
+                    borderRadius: "8px",
+                    border: "1px solid #f5c6c0",
+                    background: "none",
+                    color: "#c0392b",
+                    fontFamily: "sans-serif",
+                    fontSize: "13px",
+                    fontWeight: 600,
+                    cursor: "pointer",
+                  }}
+                >
+                  Delete
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </main>

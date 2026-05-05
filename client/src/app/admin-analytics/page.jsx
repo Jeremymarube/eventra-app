@@ -125,7 +125,7 @@ export default function AdminAnalyticsPage() {
         </div>
 
         {/* ── Stat cards ── */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "16px", marginBottom: "40px" }}>
+        <div className="responsive-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "16px", marginBottom: "40px" }}>
           {statsCards.map((s) => (
             <div
               key={s.label}
@@ -224,7 +224,7 @@ export default function AdminAnalyticsPage() {
         </div>
 
         {/* ── Bottom two-col ── */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>
+        <div className="responsive-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>
 
           {/* Top events table */}
           <div

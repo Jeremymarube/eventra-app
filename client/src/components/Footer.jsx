@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 const tokens = {
   cream: "#F5F0E8",
   black: "#1a1a1a",
@@ -11,15 +13,29 @@ const tokens = {
 const cols = [
   {
     heading: "DISCOVER",
-    links: ["Browse all", "Categories", "This weekend", "Free events"],
+    links: [
+      { label: "Browse all", href: "/browse" },
+      { label: "Categories", href: "/categories" },
+      { label: "This weekend", href: "/browse?filter=weekend" },
+      { label: "Free events", href: "/browse?filter=free" },
+    ],
   },
   {
     heading: "COMPANY",
-    links: ["About", "Hosts", "Press", "Contact"],
+    links: [
+      { label: "About", href: "/about" },
+      { label: "Creators", href: "/creators" },
+      { label: "Press", href: "/press" },
+      { label: "Contact", href: "/contact" },
+    ],
   },
   {
     heading: "LEGAL",
-    links: ["Terms", "Privacy", "Cookies"],
+    links: [
+      { label: "Terms", href: "/terms" },
+      { label: "Privacy", href: "/privacy" },
+      { label: "Cookies", href: "/cookies" },
+    ],
   },
 ];
 
@@ -109,9 +125,9 @@ export default function Footer() {
               }}
             >
               {col.links.map((link) => (
-                <a
-                  key={link}
-                  href="#"
+                <Link
+                  key={link.label}
+                  href={link.href}
                   style={{
                     fontFamily: "sans-serif",
                     fontSize: "clamp(12px, 2vw, 14px)",
@@ -126,8 +142,8 @@ export default function Footer() {
                     e.currentTarget.style.color = tokens.blueSubtle;
                   }}
                 >
-                  {link}
-                </a>
+                  {link.label}
+                </Link>
               ))}
             </div>
           </div>

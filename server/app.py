@@ -1,26 +1,47 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, redirect
 from flask_cors import CORS
 from config import Config
-from extensions import db, migrate
+from extensions import db, migrate, mail
 from models import Event, User, Booking, SavedEvent, Payment
-from datetime import datetime
+from datetime import datetime, timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
-from datetime import datetime, timedelta
 from functools import wraps
+from authlib.integrations.flask_client import OAuth
+from flask_mail import Mail
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
+
+    # initialize shared extensions
+    mail.init_app(app)
+
+    # configure OpenAI if key provided
     
     # Configure CORS for development (allow Next.js to connect)
-    CORS(app, origins=["http://localhost:3000", "http://localhost:3001"])
+    CORS(app, origins=["http://localhost:3000", "http://localhost:3001"], supports_credentials=True)
     
     db.init_app(app)
     migrate.init_app(app, db)
     
     # Import models
     from models import User, Event, Booking, SavedEvent, Payment
+
+    # ─── GOOGLE OAUTH SETUP ──────────────────────────────────────────────────
+    oauth = OAuth(app)
+    google = oauth.register(
+        name='google',
+        client_id=os.getenv('GOOGLE_CLIENT_ID'),
+        client_secret=os.getenv('GOOGLE_CLIENT_SECRET'),
+        server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
+        client_kwargs={'scope': 'openid email profile'},
+    )
 
     def token_required(f):
         @wraps(f)
@@ -60,6 +81,70 @@ def create_app():
             'message': 'Flask backend is running!'
         })
     
+    # ─── GOOGLE AUTH ENDPOINTS ───────────────────────────────────────────────
+
+    @app.route('/api/auth/google/login')
+    def google_login():
+        redirect_uri = os.getenv('GOOGLE_REDIRECT_URI')
+        return google.authorize_redirect(redirect_uri)
+
+    @app.route('/api/auth/google/callback')
+    def google_callback():
+        try:
+            token = google.authorize_access_token()
+            user_info = token.get('userinfo')
+
+            if not user_info:
+                return redirect('http://localhost:3000/login?error=Failed to get user info from Google')
+
+            # Check if user already exists by email
+            user = User.query.filter_by(email=user_info['email']).first()
+
+            if not user:
+                # Create new user from Google info
+                user = User(
+                    email=user_info['email'],
+                    username=user_info.get('name', ''),
+                    password_hash=generate_password_hash(os.urandom(24).hex()),  # random secure password
+                    google_id=user_info['sub'],
+                    picture=user_info.get('picture', '')
+                )
+                db.session.add(user)
+                db.session.commit()
+            else:
+                # Update google_id and picture if not already set
+                needs_update = False
+                if not getattr(user, 'google_id', None):
+                    user.google_id = user_info['sub']
+                    needs_update = True
+                if not getattr(user, 'picture', None):
+                    user.picture = user_info.get('picture', '')
+                    needs_update = True
+                if needs_update:
+                    db.session.commit()
+
+            # Generate JWT token (same as regular login)
+            jwt_token = jwt.encode(
+                {'user_id': user.id, 'exp': datetime.utcnow() + timedelta(hours=24)},
+                app.config['SECRET_KEY'],
+                algorithm='HS256'
+            )
+
+            # Redirect to Next.js with token and user info
+            frontend_url = (
+                f"http://localhost:3000/auth/callback"
+                f"?token={jwt_token}"
+                f"&name={user.username}"
+                f"&email={user.email}"
+                f"&picture={getattr(user, 'picture', '')}"
+            )
+            return redirect(frontend_url)
+
+        except Exception as e:
+            return redirect(f'http://localhost:3000/login?error={str(e)}')
+
+    # ─── STANDARD AUTH ENDPOINTS ─────────────────────────────────────────────
+
     # User registration
     @app.route('/api/register', methods=['POST'])
     def register():
@@ -99,7 +184,7 @@ def create_app():
                 'user': {
                     'id': user.id,
                     'email': user.email,
-                    'name': user.username  # Fixed: use username
+                    'name': user.username
                 }
             }), 201
             
@@ -140,7 +225,7 @@ def create_app():
                 'user': {
                     'id': user.id,
                     'email': user.email,
-                    'name': user.username  # Fixed: use username
+                    'name': user.username
                 }
             }), 200
             
@@ -154,7 +239,8 @@ def create_app():
         return jsonify({
             'id': current_user.id,
             'email': current_user.email,
-            'name': current_user.username,  # Fixed: use username
+            'name': current_user.username,
+            'picture': getattr(current_user, 'picture', ''),
             'joined': current_user.created_at.strftime('%B %Y') if current_user.created_at else 'April 2026'
         }), 200
     
@@ -162,20 +248,87 @@ def create_app():
     @app.route('/api/profile', methods=['GET'])
     @token_required
     def get_profile(current_user):
+        # Compute real stats from the database where possible
+        try:
+            saved_count = SavedEvent.query.filter_by(user_id=current_user.id).count()
+        except Exception:
+            saved_count = 0
+
+        try:
+            attended_count = Booking.query.filter_by(user_id=current_user.id, status='confirmed').count()
+        except Exception:
+            attended_count = 0
+
+        # 'Following' is not implemented yet; default to 0
+        following_count = 0
+
         return jsonify({
             'id': current_user.id,
-            'name': current_user.username,  # Fixed: use username
+            'name': current_user.username,
             'email': current_user.email,
+            'picture': getattr(current_user, 'picture', ''),
             'joined': current_user.created_at.strftime('%B %Y') if current_user.created_at else 'April 2026',
-            'bio': getattr(current_user, 'bio', 'Curious about good food, live music, and the people who make cities worth living in.'),
-            'avatar': current_user.username[0] if current_user.username else 'U',  # Fixed: use username
+            'bio': getattr(current_user, 'bio', ''),
+            'avatar': current_user.username[0] if current_user.username else 'U',
             'avatarColor': 'hsl(28, 60%, 82%)',
             'stats': [
-                {'label': 'Events saved', 'value': '12'},
-                {'label': 'Events attended', 'value': '7'},
-                {'label': 'Following', 'value': '4 hosts'}
+                {'label': 'Events saved', 'value': str(saved_count)},
+                {'label': 'Events attended', 'value': str(attended_count)},
+                {'label': 'Following', 'value': f"{following_count} hosts"}
             ]
         })
+
+    @app.route('/api/profile', methods=['DELETE'])
+    @token_required
+    def delete_profile(current_user):
+        try:
+            # Remove saved events
+            SavedEvent.query.filter_by(user_id=current_user.id).delete()
+            # Remove bookings
+            Booking.query.filter_by(user_id=current_user.id).delete()
+            # Optionally, remove events hosted by this user (and related bookings)
+            host_events = Event.query.filter_by(host_id=current_user.id).all()
+            for ev in host_events:
+                Booking.query.filter_by(event_id=ev.id).delete()
+                db.session.delete(ev)
+
+            db.session.delete(current_user)
+            db.session.commit()
+            return jsonify({'message': 'Account deleted'}), 200
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'error': str(e)}), 400
+
+    # Simple image upload endpoint used by the Next.js client when creating events
+    @app.route('/api/upload', methods=['POST'])
+    @token_required
+    def upload_image(current_user):
+        from werkzeug.utils import secure_filename
+        import os
+
+        if 'image' not in request.files:
+            return jsonify({'error': 'No image file provided'}), 400
+
+        image = request.files['image']
+        if image.filename == '':
+            return jsonify({'error': 'No selected file'}), 400
+
+        uploads_dir = os.path.join(app.root_path, 'static', 'uploads')
+        os.makedirs(uploads_dir, exist_ok=True)
+
+        filename = secure_filename(image.filename)
+        # prefix with timestamp to avoid collisions
+        timestamp = datetime.utcnow().strftime('%Y%m%d%H%M%S')
+        filename = f"{timestamp}_{filename}"
+        file_path = os.path.join(uploads_dir, filename)
+
+        try:
+            image.save(file_path)
+            # Flask serves files under /static/<path>
+            image_url = f"/static/uploads/{filename}"
+            return jsonify({'imageUrl': image_url}), 200
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
     
     @app.route('/api/profile', methods=['PUT'])
     @token_required
@@ -184,7 +337,7 @@ def create_app():
             data = request.get_json()
             
             if 'name' in data:
-                current_user.username = data['name']  # Fixed: use username
+                current_user.username = data['name']
             if 'bio' in data:
                 current_user.bio = data['bio']
             
@@ -195,7 +348,7 @@ def create_app():
                 'user': {
                     'id': current_user.id,
                     'email': current_user.email,
-                    'name': current_user.username,  # Fixed: use username
+                    'name': current_user.username,
                     'bio': getattr(current_user, 'bio', '')
                 }
             }), 200
@@ -204,10 +357,11 @@ def create_app():
             db.session.rollback()
             return jsonify({'error': str(e)}), 400
     
+    # ─── EVENT ENDPOINTS ─────────────────────────────────────────────────────
+
     # Get all events
     @app.route('/api/events', methods=['GET'])
     def get_events():
-        # Optional filters
         category = request.args.get('category')
         published_only = request.args.get('published', 'true').lower() == 'true'
         
@@ -226,7 +380,7 @@ def create_app():
         event = Event.query.get_or_404(event_id)
         return jsonify(event.to_dict())
     
-    # Create new event (protected - requires authentication)
+    # Create new event (protected)
     @app.route('/api/events', methods=['POST'])
     @token_required
     def create_event(current_user):
@@ -252,7 +406,24 @@ def create_app():
             
             db.session.add(event)
             db.session.commit()
-            
+
+            # send creator email (best-effort)
+            try:
+                from utils.email import send_event_created_email
+                send_event_created_email(event)
+            except Exception as e:
+                print(f"[EMAIL ERROR] {e}")
+
+            # create an in-app notification for the host
+            try:
+                from models import Notification
+                n = Notification(user_id=current_user.id, message=f'Your event "{event.title}" is now live')
+                db.session.add(n)
+                db.session.commit()
+            except Exception as e:
+                db.session.rollback()
+                print(f"[NOTIF ERROR] {e}")
+
             return jsonify({
                 'message': 'Event created successfully',
                 'event': event.to_dict()
@@ -268,7 +439,6 @@ def create_app():
     def update_event(current_user, event_id):
         event = Event.query.get_or_404(event_id)
         
-        # Check if user is the host
         if event.host_id != current_user.id:
             return jsonify({'error': 'Unauthorized'}), 403
         
@@ -317,7 +487,6 @@ def create_app():
     def delete_event(current_user, event_id):
         event = Event.query.get_or_404(event_id)
         
-        # Check if user is the host
         if event.host_id != current_user.id:
             return jsonify({'error': 'Unauthorized'}), 403
         
@@ -328,6 +497,65 @@ def create_app():
         except Exception as e:
             db.session.rollback()
             return jsonify({'error': str(e)}), 400
+
+    # Notifications
+    @app.route('/api/notifications', methods=['GET'])
+    @token_required
+    def get_notifications(current_user):
+        from models import Notification
+        notes = Notification.query.filter_by(user_id=current_user.id).order_by(Notification.created_at.desc()).all()
+        return jsonify([{
+            'id': n.id,
+            'message': n.message,
+            'is_read': n.is_read,
+            'created_at': n.created_at.isoformat()
+        } for n in notes])
+
+    @app.route('/api/notifications/mark-read', methods=['POST'])
+    @token_required
+    def mark_notifications_read(current_user):
+        data = request.get_json() or {}
+        ids = data.get('ids')
+        from models import Notification
+        try:
+            if ids and isinstance(ids, list):
+                Notification.query.filter(Notification.user_id == current_user.id, Notification.id.in_(ids)).update({'is_read': True}, synchronize_session=False)
+            else:
+                Notification.query.filter_by(user_id=current_user.id, is_read=False).update({'is_read': True}, synchronize_session=False)
+            db.session.commit()
+            return jsonify({'message': 'Notifications marked read'}), 200
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'error': str(e)}), 400
+
+    # AI description generator
+    @app.route('/api/events/generate-description', methods=['POST'])
+    @token_required
+    def generate_description(current_user):
+        import requests as http_requests
+        api_key = os.getenv('GEMINI_API_KEY')
+        if not api_key:
+            return jsonify({'error': 'Gemini API key not configured'}), 500
+        data = request.get_json() or {}
+        title = data.get('title', '')
+        category = data.get('category', '')
+        location = data.get('location_name') or data.get('location') or ''
+        prompt = (
+            f"Write a short (1-3 paragraph), engaging event description for an event titled \"{title}\" "
+            f"in the category \"{category}\" taking place at \"{location}\". Emphasize what makes it special and include a call-to-action to book a ticket."
+        )
+        try:
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
+            payload = {
+                "contents": [{"parts": [{"text": prompt}]}]
+            }
+            resp = http_requests.post(url, json=payload)
+            resp.raise_for_status()
+            text = resp.json()['candidates'][0]['content']['parts'][0]['text'].strip()
+            return jsonify({'description': text}), 200
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+   
     
     # ─── BOOKING ENDPOINTS ───────────────────────────────────────────────────
     
@@ -340,13 +568,11 @@ def create_app():
         try:
             event = Event.query.get_or_404(data['event_id'])
             
-            # Check if event has capacity available
             if event.capacity:
                 booked_count = Booking.query.filter_by(event_id=event.id).filter(Booking.status != 'cancelled').count()
                 if booked_count >= event.capacity:
                     return jsonify({'error': 'Event is full'}), 400
             
-            # Create booking
             booking = Booking(
                 user_id=current_user.id,
                 event_id=event.id,
@@ -359,7 +585,14 @@ def create_app():
             
             db.session.add(booking)
             db.session.commit()
-            
+
+            # Send ticket email to attendee
+            try:
+                from utils.email import send_ticket_email
+                send_ticket_email(booking)
+            except Exception as e:
+                print(f"[EMAIL ERROR] {e}")
+
             return jsonify({
                 'message': 'Booking created',
                 'booking': booking.to_dict()
@@ -373,7 +606,7 @@ def create_app():
     @app.route('/api/bookings', methods=['GET'])
     @token_required
     def get_bookings(current_user):
-        status = request.args.get('status')  # Optional filter: upcoming, past, etc.
+        status = request.args.get('status')
         
         query = Booking.query.filter_by(user_id=current_user.id)
         if status:
@@ -388,7 +621,6 @@ def create_app():
     def get_booking(current_user, booking_id):
         booking = Booking.query.get_or_404(booking_id)
         
-        # User can only view their own bookings
         if booking.user_id != current_user.id:
             return jsonify({'error': 'Unauthorized'}), 403
         
@@ -400,7 +632,6 @@ def create_app():
     def cancel_booking(current_user, booking_id):
         booking = Booking.query.get_or_404(booking_id)
         
-        # User can only cancel their own bookings
         if booking.user_id != current_user.id:
             return jsonify({'error': 'Unauthorized'}), 403
         
@@ -423,7 +654,6 @@ def create_app():
         booking = Booking.query.get_or_404(booking_id)
         event = booking.event
         
-        # Only event host can check in attendees
         if event.host_id != current_user.id:
             return jsonify({'error': 'Unauthorized'}), 403
         
@@ -445,7 +675,6 @@ def create_app():
         data = request.get_json()
         
         try:
-            # Check if already saved
             existing = SavedEvent.query.filter_by(
                 user_id=current_user.id,
                 event_id=data['event_id']
@@ -503,7 +732,7 @@ def create_app():
     @app.route('/api/host/events', methods=['GET'])
     @token_required
     def get_host_events(current_user):
-        status = request.args.get('status')  # Optional filter
+        status = request.args.get('status')
         
         query = Event.query.filter_by(host_id=current_user.id)
         if status:
@@ -518,7 +747,6 @@ def create_app():
     def get_event_attendees(current_user, event_id):
         event = Event.query.get_or_404(event_id)
         
-        # Only host can view attendees
         if event.host_id != current_user.id:
             return jsonify({'error': 'Unauthorized'}), 403
         
@@ -543,7 +771,6 @@ def create_app():
     def get_event_analytics(current_user, event_id):
         event = Event.query.get_or_404(event_id)
         
-        # Only host can view analytics
         if event.host_id != current_user.id:
             return jsonify({'error': 'Unauthorized'}), 403
         
@@ -575,6 +802,8 @@ def create_app():
                 'auth': [
                     'POST /api/register',
                     'POST /api/login',
+                    'GET /api/auth/google/login',
+                    'GET /api/auth/google/callback',
                     'GET /api/me',
                     'GET /api/profile',
                     'PUT /api/profile',

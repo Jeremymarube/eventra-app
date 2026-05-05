@@ -17,6 +17,7 @@ const tokens = {
 export default function Header() {
   const pathname = usePathname();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -78,6 +79,7 @@ export default function Header() {
 
       {/* Desktop Nav */}
       <nav
+        className="header-nav"
         style={{
           display: "flex",
           gap: "24px",
@@ -92,7 +94,7 @@ export default function Header() {
       </nav>
 
       {/* Right Actions */}
-      <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
+      <div className="header-actions" style={{ display: "flex", alignItems: "center", gap: "24px" }}>
         <button
           style={{
             background: "none",
@@ -155,6 +157,28 @@ export default function Header() {
           Sign up
         </Link>
       </div>
+
+      {/* Mobile hamburger */}
+      <button
+        className="header-hamburger"
+        aria-label="Open menu"
+        onClick={() => setIsMenuOpen((s) => !s)}
+        style={{ display: "none" }}
+      >
+        ☰
+      </button>
+
+      {isMenuOpen && (
+        <div className="mobile-header-menu" onClick={() => setIsMenuOpen(false)}>
+          <nav style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+            <Link href="/browse">Browse</Link>
+            <Link href="/categories">Categories</Link>
+            <Link href="/about">About</Link>
+            <Link href="/login">Sign in</Link>
+            <Link href="/register">Sign up</Link>
+          </nav>
+        </div>
+      )}
     </header>
   );
 }

@@ -15,7 +15,7 @@ const tokens = {
 
 const tabs = ["Upcoming", "Past events", "Saved", "Settings"];
 
-function EventRow({ event, past = false }) {
+function EventRow({ event, past = false, currentUser }) {
   // Handle both booking objects and event objects
   const eventData = event.event || event.events || event;
   const bookingId = event.id;
@@ -123,6 +123,61 @@ function EventRow({ event, past = false }) {
           </div>
         )}
         <span style={{ fontSize: "16px", color: "#ccc" }}>→</span>
+
+        {/* If current user is the host, show Edit/Delete buttons */}
+        {currentUser && eventData.host_id === currentUser.id && (
+          <div style={{ marginTop: "8px", display: "flex", flexDirection: "column", gap: "6px", alignItems: "flex-end" }}>
+            <Link
+              href={`/host/edit/${eventData.id}`}
+              style={{
+                background: "none",
+                border: "1px solid #d8d3cb",
+                padding: "8px 12px",
+                borderRadius: "8px",
+                fontFamily: "sans-serif",
+                fontSize: "12px",
+                color: tokens.black,
+                textDecoration: "none",
+              }}
+            >
+              Edit
+            </Link>
+            <button
+              onClick={async () => {
+                if (!confirm('Delete this event permanently?')) return;
+                try {
+                  const token = localStorage.getItem('token');
+                  const res = await fetch(`/api/events/${eventData.id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                  });
+                  if (res.ok) {
+                    // Redirect to host dashboard to see remaining events
+                    window.location.href = '/host';
+                  } else {
+                    const data = await res.json();
+                    alert(data.error || 'Failed to delete event');
+                  }
+                } catch (err) {
+                  console.error(err);
+                  alert('Network error');
+                }
+              }}
+              style={{
+                background: "none",
+                color: "#c0392b",
+                border: "1px solid #f5c6c0",
+                padding: "8px 12px",
+                borderRadius: "8px",
+                fontFamily: "sans-serif",
+                fontSize: "12px",
+                cursor: "pointer",
+              }}
+            >
+              Delete
+            </button>
+          </div>
+        )}
       </div>
     </Link>
   );
@@ -270,6 +325,27 @@ function SettingsTab({ user, onUpdate }) {
             fontSize: "13px",
             fontWeight: 600,
             cursor: "pointer",
+          }}
+          onClick={async () => {
+            if (!confirm('Delete your account? This action cannot be undone.')) return;
+            const token = localStorage.getItem('token');
+            try {
+              const res = await fetch('/api/profile', {
+                method: 'DELETE',
+                headers: { Authorization: `Bearer ${token}` },
+              });
+              if (res.ok) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                window.location.href = '/';
+              } else {
+                const data = await res.json();
+                alert(data.error || 'Failed to delete account');
+              }
+            } catch (err) {
+              console.error(err);
+              alert('Network error while deleting account');
+            }
           }}
         >
           Delete account
@@ -546,7 +622,7 @@ export default function ProfilePage() {
                   Loading bookings...
                 </p>
               ) : upcomingBookings.length > 0 ? (
-                upcomingBookings.map((b) => <EventRow key={b.id} event={b} />)
+                upcomingBookings.map((b) => <EventRow key={b.id} event={b} currentUser={user} />)
               ) : (
                 <p style={{ fontFamily: "sans-serif", fontSize: "15px", color: "#aaa", padding: "40px 0", textAlign: "center" }}>
                   No upcoming events. <Link href="/browse" style={{ color: tokens.orange, textDecoration: "none", fontWeight: 600 }}>Browse events →</Link>
@@ -562,7 +638,7 @@ export default function ProfilePage() {
                   Loading bookings...
                 </p>
               ) : pastBookings.length > 0 ? (
-                pastBookings.map((b) => <EventRow key={b.id} event={b} past />)
+                pastBookings.map((b) => <EventRow key={b.id} event={b} past currentUser={user} />)
               ) : (
                 <p style={{ fontFamily: "sans-serif", fontSize: "15px", color: "#aaa", padding: "40px 0", textAlign: "center" }}>
                   No past events yet.

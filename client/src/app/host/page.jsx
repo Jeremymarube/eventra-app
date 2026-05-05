@@ -75,6 +75,40 @@ export default function HostDashboard() {
     }
   };
 
+  const handleCancel = async (eventId) => {
+    if (!confirm('Cancel this event? This will mark it as cancelled.')) return;
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/events/${eventId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: 'cancelled', is_published: false }),
+      });
+      if (response.ok) fetchHostEvents();
+      else console.error('Failed to cancel event');
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleDelete = async (eventId) => {
+    if (!confirm('Delete this event permanently? This cannot be undone.')) return;
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/events/${eventId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      if (response.ok) fetchHostEvents();
+      else console.error('Failed to delete event');
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const filteredEvents = events.filter((e) => {
     if (activeTab === "draft") return e.status === "draft";
     if (activeTab === "published") return e.status === "published";
@@ -213,6 +247,7 @@ export default function HostDashboard() {
               {filteredEvents.map((event) => (
                 <div
                   key={event.id}
+                  className="responsive-grid"
                   style={{
                     background: tokens.white,
                     border: "1px solid #e8e3db",
@@ -333,6 +368,38 @@ export default function HostDashboard() {
                         Publish
                       </button>
                     )}
+                    <button
+                      onClick={() => handleCancel(event.id)}
+                      style={{
+                        background: "#f6f0ef",
+                        color: "#c0392b",
+                        border: "1px solid #f0d9d6",
+                        padding: "10px 16px",
+                        borderRadius: "8px",
+                        fontFamily: "sans-serif",
+                        fontSize: "12px",
+                        fontWeight: 600,
+                        cursor: "pointer",
+                      }}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={() => handleDelete(event.id)}
+                      style={{
+                        background: "none",
+                        color: "#c0392b",
+                        border: "1px solid #f5c6c0",
+                        padding: "10px 16px",
+                        borderRadius: "8px",
+                        fontFamily: "sans-serif",
+                        fontSize: "12px",
+                        fontWeight: 600,
+                        cursor: "pointer",
+                      }}
+                    >
+                      Delete
+                    </button>
                   </div>
                 </div>
               ))}

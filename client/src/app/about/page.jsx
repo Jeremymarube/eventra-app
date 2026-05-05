@@ -16,6 +16,7 @@ const tokens = {
 function Hero() {
   return (
     <section
+      className="responsive-grid"
       style={{
         display: "grid",
         gridTemplateColumns: "1fr 1fr",
@@ -109,7 +110,7 @@ function Hero() {
             Browse events →
           </Link>
           <Link
-            href="/register"
+            href="/host/new"
             style={{
               background: "none",
               color: tokens.black,
@@ -122,7 +123,7 @@ function Hero() {
               border: `1px solid ${tokens.black}`,
             }}
           >
-            Become a host
+            Create an event
           </Link>
         </div>
       </div>
@@ -178,6 +179,7 @@ function Hero() {
 function Manifesto() {
   return (
     <section
+      className="responsive-grid"
       style={{
         display: "grid",
         gridTemplateColumns: "1fr 1fr",
@@ -251,7 +253,7 @@ const principles = [
       </svg>
     ),
     title: "Curated, not crowded",
-    body: "Every event on Eventra is hand-picked or vetted by hosts who care. No spam, no filler — only nights worth remembering.",
+    body: "Every event on Eventra is hand-picked or vetted by creators who care. No spam, no filler — only nights worth remembering.",
   },
   {
     icon: (
@@ -303,19 +305,17 @@ function Principles() {
       <h2
         style={{
           fontFamily: "'Georgia', serif",
-          fontSize: "clamp(36px, 4vw, 54px)",
+          fontSize: "clamp(28px, 3.5vw, 40px)",
           fontWeight: 900,
           color: tokens.black,
-          margin: "0 0 48px",
-          letterSpacing: "-1.5px",
-          lineHeight: 1.1,
+          margin: "12px 0 28px",
           maxWidth: "480px",
         }}
       >
         Four principles, no compromises.
       </h2>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
+      <div className="responsive-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
         {principles.map((p) => (
           <div
             key={p.title}
@@ -379,7 +379,7 @@ function Stats() {
         borderTop: "1px solid #e0dbd0",
       }}
     >
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "32px" }}>
+      <div className="responsive-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "32px" }}>
         {stats.map((s) => (
           <div key={s.label}>
             <div style={{ height: "1px", background: tokens.black, marginBottom: "24px" }} />

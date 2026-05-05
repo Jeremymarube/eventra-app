@@ -1,6 +1,7 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 import Header from "../../../components/Header";
 import Footer from "../../../components/Footer";
 
@@ -11,103 +12,49 @@ const tokens = {
   orange: "#E8440A",
 };
 
-// Mock events data (will come from Flask backend later)
-const eventsData = {
-  1: {
-    id: 1,
-    title: "Golden Hour Sessions",
-    category: "MUSIC",
-    dayLabel: "FRIDAY",
-    description: "An evening of soulful music as the sun sets over San Francisco. Local artists, food trucks, and good vibes.",
-    host: "SF Arts & Culture",
-    venue: "Golden Gate Park Bandshell",
-    address: "501 Stanyan St, San Francisco, CA 94117",
-    date: "Friday, April 25",
-    time: "6:00 PM - 10:00 PM",
-    capacity: "Limited to 500 guests",
-    price: "$25 - $45",
-    img: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=1200&q=80",
-    mapLat: 37.7694,
-    mapLng: -122.4862,
-  },
-  2: {
-    id: 2,
-    title: "Sunrise Yoga & Stillness",
-    category: "WELLNESS",
-    dayLabel: "WEDNESDAY",
-    description: "Move slowly, breathe deeply, watch the day arrive. All levels welcome. Mats provided.",
-    host: "Eventra Curators",
-    venue: "Bernal Heights Summit",
-    address: "Bernal Heights Park, San Francisco, CA",
-    date: "Wednesday, April 22",
-    time: "8:57 PM",
-    capacity: "Limited to 30 guests",
-    price: "$15",
-    img: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&q=80",
-    mapLat: 37.7399,
-    mapLng: -122.4148,
-  },
-  3: {
-    id: 3,
-    title: "Abstract Forms Gallery Night",
-    category: "ART",
-    dayLabel: "THURSDAY",
-    description: "Explore contemporary abstract art at Meridian Gallery. Wine and small bites provided.",
-    host: "Meridian Gallery",
-    venue: "Meridian Gallery",
-    address: "535 Powell St, San Francisco, CA 94108",
-    date: "Thursday, April 24",
-    time: "7:00 PM - 9:30 PM",
-    capacity: "Limited to 100 guests",
-    price: "$25",
-    img: "https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?w=1200&q=80",
-    mapLat: 37.7883,
-    mapLng: -122.4084,
-  },
-  4: {
-    id: 4,
-    title: "City Rooftop Run",
-    category: "SPORTS",
-    dayLabel: "SATURDAY",
-    description: "5K run with stunning skyline views. Proceeds benefit local parks.",
-    host: "SF Running Club",
-    venue: "Salesforce Park",
-    address: "425 Mission St, San Francisco, CA 94105",
-    date: "Saturday, April 26",
-    time: "8:00 AM - 10:00 AM",
-    capacity: "Limited to 300 runners",
-    price: "$35",
-    img: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=1200&q=80",
-    mapLat: 37.7898,
-    mapLng: -122.3971,
-  },
-  5: {
-    id: 5,
-    title: "Late Night Jazz & Electric",
-    category: "MUSIC",
-    dayLabel: "SATURDAY",
-    description: "Late night jazz fusion and electronic beats. 21+ event.",
-    host: "Nightlife Collective",
-    venue: "Studio 84",
-    address: "84 Turk St, San Francisco, CA 94102",
-    date: "Saturday, April 26",
-    time: "10:00 PM - 2:00 AM",
-    capacity: "Limited to 200 guests",
-    price: "$18",
-    img: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=1200&q=80",
-    mapLat: 37.7825,
-    mapLng: -122.4108,
-  },
-};
+// Fetch event from backend
 
 export default function EventDetailPage() {
   const params = useParams();
   const router = useRouter();
   const eventId = params.id;
-  const event = eventsData[eventId];
+  const [event, setEvent] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // If event not found, show error
-  if (!event) {
+  useEffect(() => {
+    const fetchEvent = async () => {
+      try {
+        const res = await fetch(`/api/events/${eventId}`);
+        if (!res.ok) {
+          setError('Event not found');
+          setLoading(false);
+          return;
+        }
+        const data = await res.json();
+        setEvent(data);
+      } catch (err) {
+        setError('Failed to load event');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchEvent();
+  }, [eventId]);
+
+  if (loading) {
+    return (
+      <div style={{ minHeight: "100vh", background: tokens.cream }}>
+        <Header />
+        <main style={{ maxWidth: "960px", margin: "0 auto", padding: "80px 48px", textAlign: "center" }}>
+          <p>Loading...</p>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (error || !event) {
     return (
       <div style={{ minHeight: "100vh", background: tokens.cream }}>
         <Header />
@@ -438,7 +385,7 @@ export default function EventDetailPage() {
 
 
             {/* Save / Share row */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+            <div className="responsive-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
               <button
                 style={{
                   padding: "14px",

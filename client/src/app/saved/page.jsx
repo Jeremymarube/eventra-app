@@ -303,7 +303,7 @@ export default function SavedPage() {
 
         {/* Grid or empty state */}
         {!loading && saved.length > 0 ? (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "20px" }}>
+                <div className="responsive-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "20px" }}>
             {saved.map((event) => (
               <SavedCard key={event.id || event.event_id} event={event} onRemove={handleRemove} removing={removing[event.id || event.event_id]} />
             ))}

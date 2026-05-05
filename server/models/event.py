@@ -1,4 +1,4 @@
-# models/event.py
+# server/models/event.py
 from extensions import db
 from datetime import datetime
 
@@ -11,25 +11,20 @@ class Event(db.Model):
     category = db.Column(db.String(100))
     location = db.Column(db.String(200))
     location_name = db.Column(db.String(200))
-    price_cents = db.Column(db.Integer, default=0)  # Always in cents
+    price_cents = db.Column(db.Integer, default=0)
     currency = db.Column(db.String(3), default='KES')
     starts_at = db.Column(db.DateTime, nullable=False)
     ends_at = db.Column(db.DateTime)
-    capacity = db.Column(db.Integer)  # Total spots available
-    cover_image_url = db.Column(db.String(500))  # URL to cover image
-    
-    # Host/creator relationship
+    capacity = db.Column(db.Integer)
+    cover_image_url = db.Column(db.String(500))
     host_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    host = db.relationship('User', backref='hosted_events', foreign_keys=[host_id])
-    
-    # Event lifecycle state: draft, published, live, ended, cancelled
     status = db.Column(db.String(50), default='draft')
-    
-    is_published = db.Column(db.Boolean, default=False)  # Kept for backward compatibility
+    is_published = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Relationships
+    host = db.relationship('User', backref='hosted_events', foreign_keys=[host_id])
     bookings = db.relationship('Booking', back_populates='event', cascade='all, delete-orphan')
     saved_by = db.relationship('SavedEvent', back_populates='event', cascade='all, delete-orphan')
     

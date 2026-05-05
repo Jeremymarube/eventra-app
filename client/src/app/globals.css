@@ -12,3 +12,340 @@ body {
   padding: 0;
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Generic responsive grid helper: collapse multi-column layouts on smaller screens */
+@media (max-width: 1024px) {
+  .responsive-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 16px !important;
+    padding-left: 28px !important;
+    padding-right: 28px !important;
+    padding-top: 28px !important;
+    padding-bottom: 28px !important;
+  }
+
+  /* Slightly reduce large headings within responsive sections on tablet */
+  .responsive-grid h1 {
+    font-size: clamp(28px, 4.2vw, 48px) !important;
+    margin-bottom: 8px !important;
+  }
+  .responsive-grid h2 {
+    font-size: clamp(20px, 3.5vw, 32px) !important;
+    margin-bottom: 8px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .responsive-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+    padding-left: 18px !important;
+    padding-right: 18px !important;
+    padding-top: 18px !important;
+    padding-bottom: 18px !important;
+  }
+
+  .responsive-grid img {
+    width: 100% !important;
+    height: auto !important;
+    object-fit: cover !important;
+  }
+
+  .responsive-grid > * {
+    min-width: 0 !important;
+  }
+
+  /* Scale headings and tighten spacing for small screens */
+  .responsive-grid h1 {
+    font-size: clamp(22px, 7vw, 36px) !important;
+    line-height: 1.05 !important;
+    margin-bottom: 6px !important;
+  }
+  .responsive-grid h2 {
+    font-size: clamp(18px, 5.5vw, 28px) !important;
+    margin-bottom: 6px !important;
+  }
+
+  /* Buttons and inputs - ensure comfortable touch targets */
+  .responsive-grid button,
+  .responsive-grid input,
+  .responsive-grid a {
+    min-height: 44px !important;
+    tap-highlight-color: rgba(0,0,0,0.1) !important;
+  }
+
+  /* Reduce excessive vertical padding inside SignedInHome sections */
+  .responsive-grid[style] {
+    padding-top: 12px !important;
+    padding-bottom: 12px !important;
+  }
+}
+
+/* Auth (signin/register) responsive tweaks */
+@media (max-width: 1024px) {
+  .auth-layout {
+    flex-direction: row !important;
+  }
+  .auth-left {
+    width: 40% !important;
+  }
+  .auth-right {
+    padding: 40px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .auth-layout {
+    flex-direction: column !important;
+  }
+  .auth-left {
+    width: 100% !important;
+    height: 240px !important;
+    min-height: 220px !important;
+  }
+  .auth-left img {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+  }
+  .auth-right {
+    padding: 24px !important;
+  }
+  .auth-right h1 {
+    font-size: clamp(28px, 6vw, 40px) !important;
+  }
+  .auth-right button,
+  .auth-right input {
+    min-height: 44px !important;
+  }
+}
+
+/* Responsive overrides for the Create Event page */
+.create-event-main {
+  /* desktop uses inline padding; these rules only affect narrower viewports */
+}
+
+@media (max-width: 1024px) {
+  .create-event-grid {
+    grid-template-columns: 1fr !important;
+    gap: 24px !important;
+    max-width: 900px !important;
+    margin: 0 auto !important;
+  }
+
+  .create-event-main {
+    padding: 32px 4vw !important;
+  }
+
+  .cover-preview {
+    height: 360px !important;
+  }
+
+  .event-title {
+    font-size: 28px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .create-event-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+    max-width: 100% !important;
+    margin: 0 8px !important;
+    padding: 0 !important;
+  }
+
+  .create-event-main {
+    padding: 20px 4vw !important;
+  }
+
+  .cover-preview {
+    height: 240px !important;
+    border-radius: 12px !important;
+  }
+
+  .cover-image {
+    width: 100% !important;
+    height: auto !important;
+    object-fit: cover !important;
+  }
+
+  .image-upload-label {
+    padding: 12px !important;
+    font-size: 14px !important;
+  }
+
+  .event-title {
+    font-size: 22px !important;
+  }
+
+  .create-event-grid input,
+  .create-event-grid button,
+  .create-event-grid select,
+  .create-event-grid textarea {
+    font-size: 14px !important;
+    padding: 12px !important;
+    min-height: 44px !important;
+    box-sizing: border-box !important;
+  }
+
+  .category-button {
+    padding: 8px 12px !important;
+    font-size: 13px !important;
+  }
+
+  .submit-button {
+    padding: 14px !important;
+    font-size: 16px !important;
+  }
+}
+
+/* Browse page responsive adjustments */
+@media (max-width: 1024px) {
+  .browse-main {
+    padding: 40px 4vw 60px !important;
+  }
+
+  .browse-filters {
+    gap: 8px !important;
+  }
+
+  .events-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 18px !important;
+    margin-top: 24px !important;
+  }
+
+  .events-grid img {
+    height: 180px !important;
+    object-fit: cover !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .browse-main {
+    padding: 24px 4vw 40px !important;
+  }
+
+  .browse-filters {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+    padding-bottom: 12px !important;
+    border-bottom: none !important;
+  }
+
+  .browse-filters button {
+    min-height: 44px !important;
+    padding: 10px 14px !important;
+    font-size: 14px !important;
+  }
+
+  .browse-search input {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 12px 16px !important;
+  }
+
+  .events-grid {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+    margin-top: 20px !important;
+  }
+
+  .events-grid img {
+    height: 140px !important;
+  }
+
+  .events-grid .event-card {
+    border-radius: 16px !important;
+  }
+}
+
+/* Sidebar mobile collapse */
+@media (max-width: 768px) {
+  .sidebar-hamburger {
+    display: flex !important;
+    position: fixed !important;
+    top: 12px !important;
+    left: 12px !important;
+    width: 44px !important;
+    height: 44px !important;
+    align-items: center !important;
+    justify-content: center !important;
+    z-index: 1200 !important;
+    border-radius: 8px !important;
+    background: #0D1B2A !important;
+    color: #F5F0E8 !important;
+    border: 1px solid rgba(255,255,255,0.08) !important;
+    font-size: 20px !important;
+    cursor: pointer !important;
+  }
+
+  .app-sidebar {
+    transform: translateX(-110%) !important;
+    transition: transform 0.25s ease !important;
+    width: 80% !important;
+    max-width: 320px !important;
+    z-index: 1300 !important; /* ensure sidebar sits above overlay on mobile */
+  }
+
+  .app-sidebar.open {
+    transform: translateX(0) !important;
+  }
+
+  .sidebar-overlay {
+    display: block !important;
+    position: fixed !important;
+    inset: 0 !important;
+    background: rgba(0,0,0,0.4) !important;
+    z-index: 1100 !important;
+  }
+}
+
+/* Header responsive */
+@media (max-width: 768px) {
+  .header-nav {
+    display: none !important;
+  }
+
+  .header-actions {
+    display: none !important;
+  }
+
+  .header-hamburger {
+    display: flex !important;
+    background: transparent !important;
+    border: none !important;
+    color: #F5F0E8 !important;
+    font-size: 20px !important;
+    width: 44px !important;
+    height: 44px !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    margin-left: 8px !important;
+  }
+
+  .mobile-header-menu {
+    position: absolute !important;
+    top: 64px !important;
+    left: 0 !important;
+    right: 0 !important;
+    background: #0D1B2A !important;
+    padding: 16px !important;
+    z-index: 1050 !important;
+    border-bottom: 1px solid rgba(255,255,255,0.06) !important;
+  }
+
+  .mobile-header-menu a {
+    color: #F5F0E8 !important;
+    text-decoration: none !important;
+    padding: 10px 8px !important;
+    display: block !important;
+    font-size: 16px !important;
+  }
+}

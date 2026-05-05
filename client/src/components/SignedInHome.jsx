@@ -28,100 +28,9 @@ const tokens = {
   card: "#ffffff",
 };
 
-// ─── Mock data ────────────────────────────────────────────────────────────────
-
-const MOCK_UPCOMING = [
-  {
-    id: "1",
-    quantity: 2,
-    reference_code: "EVT-4821",
-    events: {
-      id: "1",
-      title: "Founders Breakfast: Building in Public",
-      category: "business",
-      starts_at: "2026-05-10T08:00:00Z",
-      location_name: "The Workshop, Nairobi",
-      cover_image_url: null,
-    },
-  },
-  {
-    id: "2",
-    quantity: 1,
-    reference_code: "EVT-2034",
-    events: {
-      id: "4",
-      title: "The Future of Interfaces — A Conference",
-      category: "tech",
-      starts_at: "2026-05-04T10:00:00Z",
-      location_name: "iHub, Nairobi",
-      cover_image_url: null,
-    },
-  },
-  {
-    id: "3",
-    quantity: 3,
-    reference_code: "EVT-7751",
-    events: {
-      id: "3",
-      title: "Vinyl Listening Club: Side A",
-      category: "music",
-      starts_at: "2026-05-03T19:00:00Z",
-      location_name: "The Alchemist Bar",
-      cover_image_url: null,
-    },
-  },
-];
-
-const MOCK_SAVED = [
-  {
-    event_id: "5",
-    events: {
-      id: "5",
-      title: "Natural Wine 101: A Tasting",
-      category: "food-drink",
-      starts_at: "2026-05-06T18:00:00Z",
-      location_name: "Brew Bistro",
-      cover_image_url:
-        "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=80",
-    },
-  },
-  {
-    event_id: "6",
-    events: {
-      id: "6",
-      title: "Afrobeats Night: Live & Uncut",
-      category: "music",
-      starts_at: "2026-05-09T21:00:00Z",
-      location_name: "Unplugged, Westlands",
-      cover_image_url:
-        "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=600&q=80",
-    },
-  },
-  {
-    event_id: "7",
-    events: {
-      id: "7",
-      title: "Mindful Movement: Sunrise Yoga",
-      category: "wellness",
-      starts_at: "2026-05-11T06:30:00Z",
-      location_name: "Karura Forest",
-      cover_image_url:
-        "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600&q=80",
-    },
-  },
-  {
-    event_id: "8",
-    events: {
-      id: "8",
-      title: "Street Photography Walk",
-      category: "art",
-      starts_at: "2026-05-14T09:00:00Z",
-      location_name: "CBD, Nairobi",
-      cover_image_url:
-        "https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?w=600&q=80",
-    },
-  },
-];
+// Use real backend data for upcoming bookings and saved events
+const MOCK_UPCOMING = [];
+const MOCK_SAVED = [];
 
 const CATEGORY_LABELS = {
   music: "Music",
@@ -161,7 +70,6 @@ function DateHeader() {
       })
     );
   }, []);
-
   return (
     <div
       style={{
@@ -199,6 +107,7 @@ function WelcomeSection({ userName = "Jeremy" }) {
 
   return (
     <div
+      className="responsive-grid"
       style={{
         padding: "48px 48px 40px",
         background: tokens.white,
@@ -228,7 +137,7 @@ function WelcomeSection({ userName = "Jeremy" }) {
               letterSpacing: "-1.5px",
             }}
           >
-            Welcome back,{" "}
+            Welcome back,{' '}
             <em
               style={{
                 fontStyle: "italic",
@@ -298,14 +207,6 @@ function WelcomeSection({ userName = "Jeremy" }) {
                 cursor: "pointer",
                 transition: "all 0.2s",
                 position: "relative",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = tokens.orange;
-                e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.08)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = tokens.borderColor;
-                e.currentTarget.style.boxShadow = "none";
               }}
             >
               <div
@@ -423,18 +324,36 @@ function EmptyState({ icon: Icon, title, body, ctaLabel, ctaHref }) {
 }
 
 function UpNextSection() {
-  // Swap `MOCK_UPCOMING` for a real Supabase fetch to go live
-  const upcoming = MOCK_UPCOMING;
   const router = useRouter();
+  const [upcoming, setUpcoming] = useState([]);
+
+  useEffect(() => {
+    const fetchUpcoming = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch('/api/bookings', {
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setUpcoming(data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch bookings', err);
+      }
+    };
+    fetchUpcoming();
+  }, []);
 
   return (
-    <section
+      <section
+      className="responsive-grid"
       style={{
         padding: "56px 48px",
         background: tokens.white,
         borderBottom: `1px solid ${tokens.borderColor}`,
       }}
-    >
+      >
       {/* Header row */}
       <div
         style={{
@@ -506,12 +425,14 @@ function UpNextSection() {
           }}
         >
           {upcoming.map((booking) => {
-            const ev = booking.events;
+            // support different API shapes: booking.events, booking.event, or booking as event
+            const ev = booking.events || booking.event || booking;
+            if (!ev || !ev.starts_at) return null;
             const d = formatEventDate(ev.starts_at);
             return (
               <Link
-                key={booking.id}
-                href={`/event/${ev.id}`}
+                key={booking.id || ev.id || ev.event_id}
+                href={`/event/${ev.id || booking.event_id}`}
                 style={{ textDecoration: "none" }}
               >
                 <div
@@ -594,8 +515,8 @@ function UpNextSection() {
                         margin: "0 0 4px",
                       }}
                     >
-                      {booking.quantity} ticket{booking.quantity > 1 ? "s" : ""} ·{" "}
-                      {booking.reference_code}
+                      {booking.quantity || 1} ticket{(booking.quantity || 1) > 1 ? "s" : ""} ·{" "}
+                      {booking.reference_code || ''}
                     </p>
                     <p
                       style={{
@@ -633,6 +554,55 @@ function UpNextSection() {
                       </p>
                     )}
                   </div>
+                  {/* Actions column */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-end', flexShrink: 0 }}>
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        window.location.href = '/tickets';
+                      }}
+                      style={{
+                        background: tokens.orange,
+                        color: tokens.white,
+                        border: 'none',
+                        padding: '8px 12px',
+                        borderRadius: '10px',
+                        cursor: 'pointer',
+                        fontWeight: 700,
+                      }}
+                    >
+                      View ticket
+                    </button>
+
+                    <button
+                      onClick={async (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const url = `${window.location.origin}/event/${ev.id}`;
+                        try {
+                          if (navigator.share) {
+                            await navigator.share({ title: ev.title, url });
+                          } else {
+                            await navigator.clipboard.writeText(url);
+                            alert('Link copied to clipboard');
+                          }
+                        } catch (err) {
+                          console.error(err);
+                          alert('Could not share');
+                        }
+                      }}
+                      style={{
+                        background: 'none',
+                        border: `1px solid ${tokens.borderColor}`,
+                        padding: '6px 10px',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      ↗ Share
+                    </button>
+                  </div>
                 </div>
               </Link>
             );
@@ -644,20 +614,39 @@ function UpNextSection() {
 }
 
 function SavedSection() {
-  // Swap `MOCK_SAVED` for a real Supabase fetch to go live
-  const saved = MOCK_SAVED;
   const router = useRouter();
+  const [saved, setSaved] = useState([]);
+
+  useEffect(() => {
+    const fetchSaved = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch('/api/saved-events', {
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
+        });
+        if (res.ok) {
+          const data = await res.json();
+          // backend returns array of { id, event, saved_at }
+          setSaved(data.map((s) => ({ events: s.event, event_id: s.id })));
+        }
+      } catch (err) {
+        console.error('Failed to fetch saved events', err);
+      }
+    };
+    fetchSaved();
+  }, []);
 
   if (saved.length === 0) return null;
 
   return (
-    <section
-      style={{
-        padding: "56px 48px",
-        background: tokens.white,
-        borderBottom: `1px solid ${tokens.borderColor}`,
-      }}
-    >
+      <section
+        className="responsive-grid"
+        style={{
+          padding: "56px 48px",
+          background: tokens.white,
+          borderBottom: `1px solid ${tokens.borderColor}`,
+        }}
+      >
       <div
         style={{
           display: "flex",
@@ -826,6 +815,7 @@ function DepartmentsSection() {
 
   return (
     <section
+      className="responsive-grid"
       style={{
         padding: "56px 48px",
         background: tokens.lightGray,
@@ -952,18 +942,19 @@ function FeaturedEventSection() {
 
   return (
     <section
+      className="responsive-grid"
       style={{
         background: tokens.lightGray,
         borderTop: `1px solid ${tokens.borderColor}`,
         display: "grid",
-        gridTemplateColumns: "1fr 1fr",
-        minHeight: "480px",
+        gridTemplateColumns: "40% 60%",
+        minHeight: "360px",
       }}
     >
       <img
         src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80"
         alt="Featured event"
-        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+        style={{ width: "100%", height: "100%", objectFit: "cover", maxHeight: "360px" }}
       />
       <div
         style={{
@@ -1095,6 +1086,7 @@ function ThisWeekSection() {
 
   return (
     <section
+      className="responsive-grid"
       style={{
         background: tokens.lightGray,
         padding: "56px 48px",
@@ -1255,7 +1247,6 @@ export default function SignedInHome({ userName = "Jeremy" }) {
         <WelcomeSection userName={userName} />
         <UpNextSection />
         <SavedSection />
-        <DepartmentsSection />
         <FeaturedEventSection />
         <ThisWeekSection />
       </main>

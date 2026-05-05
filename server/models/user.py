@@ -10,6 +10,8 @@ class User(db.Model):
     password_hash = db.Column(db.String(255), nullable=False)
     bio = db.Column(db.Text, default='')
     profile_image = db.Column(db.String(500))  # URL to profile image
+    google_id = db.Column(db.String(100), unique=True, nullable=True)
+    picture = db.Column(db.String(500), nullable=True)
     
     # User role: 'attendee' or 'host' or 'admin'
     role = db.Column(db.String(50), default='attendee')

@@ -372,7 +372,7 @@ function NotifGroup({ icon, title, rows, notifications, onToggle }) {
       </div>
 
       {/* Column headers */}
-      <div style={{
+      <div className="responsive-grid" style={{
         display: "grid",
         gridTemplateColumns: "1fr 80px 100px",
         gap: "8px",
@@ -386,7 +386,7 @@ function NotifGroup({ icon, title, rows, notifications, onToggle }) {
       </div>
 
       {rows.map(({ key, label }) => (
-        <div key={key} style={{
+        <div key={key} className="responsive-grid" style={{
           display: "grid",
           gridTemplateColumns: "1fr 80px 100px",
           gap: "8px",

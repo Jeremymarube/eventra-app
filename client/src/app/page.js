@@ -23,6 +23,7 @@ function HeroSection() {
   
   return (
     <section
+      className="responsive-grid"
       style={{
         background: tokens.cream,
         padding: "72px 48px 80px",
@@ -298,7 +299,7 @@ function BrowseByCategory() {
 </button>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "12px" }}>
+      <div className="responsive-grid" style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "12px" }}>
         {categories.map((cat) => (
           <button
             key={cat.n}
@@ -343,6 +344,7 @@ function EditorsPick() {
   
   return (
     <section
+      className="responsive-grid"
       style={{
         background: tokens.cream,
         borderTop: "1px solid #e0dbd0",
@@ -518,7 +520,7 @@ function DontMissOut() {
         </button>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "20px" }}>
+      <div className="responsive-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "20px" }}>
         {eventCards.map((card) => (
           <button
             key={card.day}
@@ -679,7 +681,7 @@ export default function Page() {
     // Extract user name from localStorage or Supabase user data
     let userName = "User";
     if (typeof user === 'object') {
-      userName = user.user_metadata?.full_name || user.email?.split("@")[0] || user.name || user.username || "User";
+      userName = user.user_metadata?.full_name || user.name || user.username || user.email?.split("@")[0] || "User";
     }
     return <SignedInHome userName={userName} />;
   }

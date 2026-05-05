@@ -242,6 +242,7 @@ export default function CategoriesPage() {
 
         {/* 3-column grid */}
         <div
+          className="responsive-grid"
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(3, 1fr)",

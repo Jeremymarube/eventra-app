@@ -57,8 +57,16 @@ export default function RegisterPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Pick up ?error= from Google callback redirect
+  const [error, setError] = useState(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      return params.get("error") || "";
+    }
+    return "";
+  });
 
   const validateForm = () => {
     if (!name.trim()) {
@@ -84,11 +92,11 @@ export default function RegisterPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    
+
     if (!validateForm()) {
       return;
     }
-    
+
     setLoading(true);
 
     try {
@@ -103,11 +111,8 @@ export default function RegisterPage() {
       const data = await response.json();
 
       if (response.ok) {
-        // Store token and user data
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
-        
-        // Redirect to profile page
         router.push('/profile');
       } else {
         setError(data.error || 'Registration failed');
@@ -120,10 +125,11 @@ export default function RegisterPage() {
   };
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: tokens.cream }}>
+    <div className="auth-layout" style={{ display: "flex", minHeight: "100vh", background: tokens.cream }}>
 
       {/* ── Left panel ── */}
       <div
+        className="auth-left"
         style={{
           position: "relative",
           width: "50%",
@@ -164,7 +170,6 @@ export default function RegisterPage() {
 
           {/* Headline */}
           <div>
-            
             <h2
               style={{
                 fontFamily: "'Georgia', serif",
@@ -180,7 +185,7 @@ export default function RegisterPage() {
             </h2>
             <p style={{ fontFamily: "sans-serif", fontSize: "14px", color: "rgba(255,255,255,0.7)", lineHeight: 1.6, margin: 0 }}>
               Save what catches your eye. Book what moves you.<br />
-              Discover what you didn't know you'd love.
+              Discover what you didn&apos;t know you&apos;d love.
             </p>
           </div>
 
@@ -192,6 +197,7 @@ export default function RegisterPage() {
 
       {/* ── Right panel ── */}
       <div
+        className="auth-right"
         style={{
           flex: 1,
           display: "flex",
@@ -234,6 +240,7 @@ export default function RegisterPage() {
 
         {/* Google */}
         <button
+          onClick={() => window.location.href = 'http://localhost:5000/api/auth/google/login'}
           style={{
             width: "100%",
             padding: "14px",
@@ -269,24 +276,24 @@ export default function RegisterPage() {
         </div>
 
         <form onSubmit={handleSubmit}>
-          <Field 
-            label="Name" 
-            type="text" 
-            placeholder="Your name" 
+          <Field
+            label="Name"
+            type="text"
+            placeholder="Your name"
             value={name}
             onChange={handleInputChange(setName)}
           />
-          <Field 
-            label="Email" 
-            type="email" 
-            placeholder="you@example.com" 
+          <Field
+            label="Email"
+            type="email"
+            placeholder="you@example.com"
             value={email}
             onChange={handleInputChange(setEmail)}
           />
-          <Field 
-            label="Password" 
-            type="password" 
-            placeholder="••••••••" 
+          <Field
+            label="Password"
+            type="password"
+            placeholder="••••••••"
             value={password}
             onChange={handleInputChange(setPassword)}
           />

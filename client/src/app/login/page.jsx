@@ -56,8 +56,16 @@ export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Pick up ?error= from Google callback redirect
+  const [error, setError] = useState(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      return params.get("error") || "";
+    }
+    return "";
+  });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -76,14 +84,10 @@ export default function LoginPage() {
       const data = await response.json();
 
       if (response.ok) {
-        // Store token and user data
         console.log("API response:", data);
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
-        
-        // Redirect to profile page
-        //router.push('/home');
-         window.location.href = '/home';
+        window.location.href = '/home';
       } else {
         setError(data.error || 'Login failed');
       }
@@ -95,10 +99,11 @@ export default function LoginPage() {
   };
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: tokens.cream }}>
+    <div className="auth-layout" style={{ display: "flex", minHeight: "100vh", background: tokens.cream }}>
 
       {/* ── Left panel ── */}
       <div
+        className="auth-left"
         style={{
           position: "relative",
           width: "50%",
@@ -139,9 +144,6 @@ export default function LoginPage() {
 
           {/* Headline */}
           <div>
-            {/* <p style={{ fontFamily: "sans-serif", fontSize: "11px", letterSpacing: "2px", color: "rgba(255,255,255,0.6)", margin: "0 0 20px", fontWeight: 600 }}>
-              ISSUE 01
-            </p> */}
             <h2
               style={{
                 fontFamily: "'Georgia', serif",
@@ -169,6 +171,7 @@ export default function LoginPage() {
 
       {/* ── Right panel ── */}
       <div
+        className="auth-right"
         style={{
           flex: 1,
           display: "flex",
@@ -211,6 +214,7 @@ export default function LoginPage() {
 
         {/* Google */}
         <button
+          onClick={() => window.location.href = 'http://localhost:5000/api/auth/google/login'}
           style={{
             width: "100%",
             padding: "14px",
@@ -246,17 +250,17 @@ export default function LoginPage() {
         </div>
 
         <form onSubmit={handleSubmit}>
-          <Field 
-            label="Email" 
-            type="email" 
-            placeholder="you@example.com" 
+          <Field
+            label="Email"
+            type="email"
+            placeholder="you@example.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
-          <Field 
-            label="Password" 
-            type="password" 
-            placeholder="Your password" 
+          <Field
+            label="Password"
+            type="password"
+            placeholder="Your password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />

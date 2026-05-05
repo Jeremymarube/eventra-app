@@ -191,6 +191,26 @@ export default function EditEventPage() {
     }
   };
 
+  const handleDelete = async () => {
+    if (!confirm('Delete this event permanently? This cannot be undone.')) return;
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`/api/events/${eventId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      if (res.ok) {
+        window.location.href = '/host';
+      } else {
+        const data = await res.json();
+        setError(data.error || 'Failed to delete event');
+      }
+    } catch (err) {
+      console.error(err);
+      setError('Network error while deleting event');
+    }
+  };
+
   if (loading) {
     return (
       <div style={{ minHeight: "100vh", background: tokens.cream, display: "flex", flexDirection: "column" }}>
@@ -381,6 +401,22 @@ export default function EditEventPage() {
                 }}
               >
                 {saving ? "Saving..." : "Save changes"}
+              </button>
+              <button
+                onClick={handleDelete}
+                style={{
+                  background: "none",
+                  color: "#c0392b",
+                  border: "1px solid #f5c6c0",
+                  padding: "14px 28px",
+                  borderRadius: "999px",
+                  fontFamily: "sans-serif",
+                  fontSize: "15px",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                }}
+              >
+                Delete event
               </button>
             </div>
           </div>
