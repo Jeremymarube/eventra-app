@@ -32,7 +32,7 @@ export default function HostDashboard() {
   const fetchHostEvents = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("/api/host/events", {
+      const response = await fetch(process.env.NEXT_PUBLIC_API_URL + "/api/host/events", {
         headers: {
           "Authorization": `Bearer ${token}`,
         },

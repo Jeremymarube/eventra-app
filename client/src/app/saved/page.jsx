@@ -201,7 +201,7 @@ export default function SavedPage() {
   const fetchSavedEvents = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("/api/saved-events", {
+      const response = await fetch(process.env.NEXT_PUBLIC_API_URL + "/api/saved-events", {
         headers: {
           "Authorization": `Bearer ${token}`,
         },

@@ -74,7 +74,7 @@ export default function EventDetailPage() {
     if (!token) return;
 
     try {
-      const response = await fetch("/api/saved-events", {
+      const response = await fetch(process.env.NEXT_PUBLIC_API_URL + "/api/saved-events", {
         headers: { "Authorization": `Bearer ${token}` },
       });
 
@@ -106,7 +106,7 @@ export default function EventDetailPage() {
         }
       } else {
         // Save
-        const response = await fetch("/api/saved-events", {
+        const response = await fetch(process.env.NEXT_PUBLIC_API_URL + "/api/saved-events", {
           method: "POST",
           headers: {
             "Authorization": `Bearer ${token}`,
@@ -134,7 +134,7 @@ export default function EventDetailPage() {
     setBookingLoading(true);
 
     try {
-      const response = await fetch("/api/bookings", {
+      const response = await fetch(process.env.NEXT_PUBLIC_API_URL + "/api/bookings", {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`,

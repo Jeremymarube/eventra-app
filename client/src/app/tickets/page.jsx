@@ -32,7 +32,7 @@ export default function TicketsPage() {
   const fetchTickets = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("/api/bookings", {
+      const response = await fetch(process.env.NEXT_PUBLIC_API_URL + "/api/bookings", {
         headers: {
           "Authorization": `Bearer ${token}`,
         },

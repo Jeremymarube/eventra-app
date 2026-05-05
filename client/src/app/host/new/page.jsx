@@ -74,7 +74,7 @@ export default function CreateEventPage() {
   const fetchCalendars = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("/api/calendars", {
+      const response = await fetch(process.env.NEXT_PUBLIC_API_URL + "/api/calendars", {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (response.ok) {
@@ -95,7 +95,7 @@ export default function CreateEventPage() {
     setError("");
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("/api/calendars", {
+      const response = await fetch(process.env.NEXT_PUBLIC_API_URL + "/api/calendars", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -146,7 +146,7 @@ export default function CreateEventPage() {
       const token = localStorage.getItem("token");
       const uploadFormData = new FormData();
       uploadFormData.append("image", file);
-      const response = await fetch("/api/upload", {
+      const response = await fetch(process.env.NEXT_PUBLIC_API_URL + "/api/upload", {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: uploadFormData,
@@ -221,7 +221,7 @@ export default function CreateEventPage() {
         ends_at: formData.ends_at ? new Date(formData.ends_at).toISOString() : null,
         calendar_id: selectedCalendarId,
       };
-      const res = await fetch("/api/events", {
+      const res = await fetch(process.env.NEXT_PUBLIC_API_URL + "/api/events", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,

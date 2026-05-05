@@ -167,7 +167,7 @@ export default function BrowsePage() {
   const fetchEvents = async () => {
     try {
       setLoading(true);
-      const res = await fetch("/api/events?published=true");
+      const res = await fetch(process.env.NEXT_PUBLIC_API_URL + "/api/events?published=true");
       if (!res.ok) throw new Error("Failed to fetch events");
       const data = await res.json();
       setEvents(data.map(formatEvent));
