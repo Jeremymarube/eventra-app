@@ -822,6 +822,11 @@ def create_app():
             return jsonify({'error': 'User not found'}), 404
         SavedEvent.query.filter_by(user_id=user.id).delete()
         Booking.query.filter_by(user_id=user.id).delete()
+        host_events = Event.query.filter_by(host_id=user.id).all()
+        for ev in host_events:
+            Booking.query.filter_by(event_id=ev.id).delete()
+            SavedEvent.query.filter_by(event_id=ev.id).delete()
+            db.session.delete(ev)
         db.session.delete(user)
         db.session.commit()
         return jsonify({'message': f'User {email} deleted'}), 200
