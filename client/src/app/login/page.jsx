@@ -211,8 +211,9 @@ export default function LoginPage() {
             {error}
           </div>
         )}
+{/* 
 
-        {/* Google */}
+        {/* Google * /}
         <button
           onClick={() => window.location.href = 'https://eventra-api-bd4i.onrender.com/api/auth/google/login'}
           style={{
@@ -240,7 +241,7 @@ export default function LoginPage() {
             <path fill="#34A853" d="M24 48c6.2 0 11.4-2 15.2-5.5l-7.5-5.8c-2 1.4-4.6 2.2-7.7 2.2-6.2 0-11.5-4.2-13.4-9.8l-7.8 5.9C6.7 42.6 14.7 48 24 48z"/>
           </svg>
           Continue with Google
-        </button>
+        </button> */}
 
         {/* OR divider */}
         <div style={{ display: "flex", alignItems: "center", gap: "12px", margin: "20px 0" }}>
