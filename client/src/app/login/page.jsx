@@ -244,11 +244,11 @@ export default function LoginPage() {
         </button> */}
 
         {/* OR divider */}
-        <div style={{ display: "flex", alignItems: "center", gap: "12px", margin: "20px 0" }}>
+        {/* <div style={{ display: "flex", alignItems: "center", gap: "12px", margin: "20px 0" }}>
           <div style={{ flex: 1, height: "1px", background: "#e0dbd0" }} />
           <span style={{ fontFamily: "sans-serif", fontSize: "12px", color: "#aaa", letterSpacing: "1px" }}>OR</span>
           <div style={{ flex: 1, height: "1px", background: "#e0dbd0" }} />
-        </div>
+        </div> */}
 
         <form onSubmit={handleSubmit}>
           <Field
