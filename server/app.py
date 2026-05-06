@@ -556,7 +556,7 @@ def create_app():
             f"in the category \"{category}\" taking place at \"{location}\". Emphasize what makes it special and include a call-to-action to book a ticket."
         )
         try:
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
             payload = {
                 "contents": [{"parts": [{"text": prompt}]}]
             }
