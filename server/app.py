@@ -27,9 +27,9 @@ def create_app():
     # Configure CORS for development (allow Next.js to connect)
     CORS(app, origins=[
     "https://eventra-app-koyx.vercel.app",
-    "http://localhost:3001",
-    "https://eventra-app-koyx.vercel.app"
-], supports_credentials=True)
+    "http://localhost:3000",
+    "http://localhost:3001"
+], supports_credentials=True, allow_headers=["Content-Type", "Authorization", "X-Admin-Secret"], methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
     
     db.init_app(app)
     migrate.init_app(app, db)
