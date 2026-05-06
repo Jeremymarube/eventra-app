@@ -809,6 +809,23 @@ def create_app():
         from flask import Response
         return Response('google-site-verification: google7e92a421f2d79c22.html', mimetype='text/html')
 
+    # Admin - delete user by email
+    @app.route('/api/admin/delete-user', methods=['POST'])
+    def admin_delete_user():
+        secret = request.headers.get('X-Admin-Secret')
+        if secret != os.getenv('ADMIN_SECRET'):
+            return jsonify({'error': 'Unauthorized'}), 401
+        data = request.get_json()
+        email = data.get('email')
+        user = User.query.filter_by(email=email).first()
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        SavedEvent.query.filter_by(user_id=user.id).delete()
+        Booking.query.filter_by(user_id=user.id).delete()
+        db.session.delete(user)
+        db.session.commit()
+        return jsonify({'message': f'User {email} deleted'}), 200
+
     # Google Search Console verification
     @app.route('/google-site-verification', methods=['GET'])
     def google_verification():
