@@ -809,6 +809,21 @@ def create_app():
         from flask import Response
         return Response('google-site-verification: google7e92a421f2d79c22.html', mimetype='text/html')
 
+    # Admin - delete event by id
+    @app.route('/api/admin/delete-event/<int:event_id>', methods=['DELETE'])
+    def admin_delete_event(event_id):
+        secret = request.headers.get('X-Admin-Secret')
+        if secret != os.getenv('ADMIN_SECRET'):
+            return jsonify({'error': 'Unauthorized'}), 401
+        event = Event.query.get(event_id)
+        if not event:
+            return jsonify({'error': 'Event not found'}), 404
+        Booking.query.filter_by(event_id=event.id).delete()
+        SavedEvent.query.filter_by(event_id=event.id).delete()
+        db.session.delete(event)
+        db.session.commit()
+        return jsonify({'message': f'Event {event_id} deleted'}), 200
+
     # Admin - delete user by email
     @app.route('/api/admin/delete-user', methods=['POST'])
     def admin_delete_user():
