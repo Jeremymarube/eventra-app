@@ -219,7 +219,7 @@ export default function CreateEventPage() {
         price_cents: paymentType === "paid" ? parseInt(formData.price_cents) : 0,
         starts_at: new Date(formData.starts_at).toISOString(),
         ends_at: formData.ends_at ? new Date(formData.ends_at).toISOString() : null,
-        calendar_id: selectedCalendarId,
+
       };
       const res = await fetch(process.env.NEXT_PUBLIC_API_URL + "/api/events", {
         method: "POST",
