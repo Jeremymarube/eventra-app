@@ -809,6 +809,11 @@ def create_app():
         from flask import Response
         return Response('google-site-verification: google7e92a421f2d79c22.html', mimetype='text/html')
 
+    # Calendars stub
+    @app.route('/api/calendars', methods=['GET', 'POST', 'OPTIONS'])
+    def calendars():
+        return jsonify({'calendars': []}), 200
+
     # Admin - delete event by id
     @app.route('/api/admin/delete-event/<int:event_id>', methods=['DELETE'])
     def admin_delete_event(event_id):
