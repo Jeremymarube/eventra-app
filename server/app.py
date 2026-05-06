@@ -424,6 +424,8 @@ def create_app():
             try:
                 from utils.email import send_event_created_email
                 send_event_created_email(event)
+            except SystemExit:
+                pass
             except Exception as e:
                 print(f"[EMAIL ERROR] {e}")
 
