@@ -24,12 +24,14 @@ def create_app():
 
     # configure OpenAI if key provided
     
-    # Configure CORS for development (allow Next.js to connect)
-    CORS(app, origins=[
-    "https://eventra-app-koyx.vercel.app",
-    "http://localhost:3000",
-    "http://localhost:3001"
-], supports_credentials=True, allow_headers=["Content-Type", "Authorization", "X-Admin-Secret"], methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
+    # Configure CORS
+    CORS(app, 
+        origins=["https://eventra-app-koyx.vercel.app", "http://localhost:3000", "http://localhost:3001"],
+        supports_credentials=True,
+        allow_headers=["Content-Type", "Authorization", "X-Admin-Secret"],
+        methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        vary_header=True
+    )
     
     db.init_app(app)
     migrate.init_app(app, db)
