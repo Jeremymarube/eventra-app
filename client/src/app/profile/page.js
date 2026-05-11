@@ -475,7 +475,7 @@ export default function ProfilePage() {
     <div style={{ minHeight: "100vh", background: tokens.cream }}>
       <Header />
 
-      <main style={{ padding: "56px 48px 80px" }}>
+      <main style={{ padding: "24px max(16px, 4vw) 80px" }}>
         <div
           style={{
             display: "flex",
@@ -509,7 +509,7 @@ export default function ProfilePage() {
             <h1
               style={{
                 fontFamily: "'Georgia', serif",
-                fontSize: "clamp(40px, 5vw, 64px)",
+                fontSize: "clamp(28px, 6vw, 64px)",
                 fontWeight: 900,
                 color: tokens.black,
                 margin: "0 0 6px",
@@ -525,7 +525,7 @@ export default function ProfilePage() {
               {user.bio || "No bio yet. Click 'Edit profile' to add one."}
             </p>
 
-            <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+            <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
               {user.stats?.map((s) => (
                 <div
                   key={s.label}
