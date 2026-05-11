@@ -1,4 +1,6 @@
 "use client";
+import Footer from "../../components/Footer";
+import Footer from "../../components/Footer";
 
 const tokens = {
   black: "#1a1a1a",
@@ -84,6 +86,7 @@ export default function TermsPage() {
           ))}
         </div>
       </section>
+      <Footer />
     </div>
   );
 }

@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import Footer from "../../components/Footer";
 
 const tokens = {
   black: "#1a1a1a",
@@ -135,6 +136,7 @@ export default function CookiesPage() {
           </button>
         </div>
       </section>
+      <Footer />
     </div>
   );
 }
