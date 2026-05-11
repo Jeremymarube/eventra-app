@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Header from "../../components/Header";
-// import Footer from "../../components/Footer";
+import Footer from "../../components/Footer";
 
 const tokens = {
   cream: "#F5F0E8",
@@ -46,6 +46,7 @@ function EventRow({ event, past = false, currentUser }) {
         textDecoration: "none",
         color: tokens.black,
         opacity: past ? 0.65 : 1,
+        flexWrap: "wrap", // Allow wrapping on mobile
       }}
     >
       <div
@@ -71,8 +72,8 @@ function EventRow({ event, past = false, currentUser }) {
         )}
       </div>
 
-      <div style={{ flex: 1 }}>
-        <div style={{ display: "flex", gap: "8px", alignItems: "center", marginBottom: "4px" }}>
+      <div style={{ flex: 1, minWidth: "200px" }}>
+        <div style={{ display: "flex", gap: "8px", alignItems: "center", marginBottom: "4px", flexWrap: "wrap" }}>
           <span
             style={{
               fontFamily: "sans-serif",
@@ -102,7 +103,7 @@ function EventRow({ event, past = false, currentUser }) {
         <div
           style={{
             fontFamily: "'Georgia', serif",
-            fontSize: "16px",
+            fontSize: "clamp(14px, 4vw, 16px)",
             fontWeight: 900,
             color: tokens.black,
             letterSpacing: "-0.3px",
@@ -116,7 +117,7 @@ function EventRow({ event, past = false, currentUser }) {
         </div>
       </div>
 
-      <div style={{ textAlign: "right", flexShrink: 0 }}>
+      <div style={{ textAlign: "right", flexShrink: 0, marginLeft: "auto" }}>
         {eventData.price && !past && (
           <div style={{ fontFamily: "'Georgia', serif", fontSize: "15px", fontWeight: 700, color: tokens.black, marginBottom: "4px" }}>
             {eventData.currency === 'KES' ? `KES ${eventData.price}` : `$${eventData.price}`}
@@ -152,7 +153,6 @@ function EventRow({ event, past = false, currentUser }) {
                     headers: { 'Authorization': `Bearer ${token}` },
                   });
                   if (res.ok) {
-                    // Redirect to host dashboard to see remaining events
                     window.location.href = '/host';
                   } else {
                     const data = await res.json();
@@ -231,8 +231,8 @@ function SettingsTab({ user, onUpdate }) {
   });
 
   return (
-    <div style={{ maxWidth: "520px" }}>
-      <h3 style={{ fontFamily: "'Georgia', serif", fontSize: "22px", fontWeight: 900, color: tokens.black, margin: "0 0 28px", letterSpacing: "-0.5px" }}>
+    <div style={{ maxWidth: "520px", width: "100%" }}>
+      <h3 style={{ fontFamily: "'Georgia', serif", fontSize: "clamp(20px, 5vw, 22px)", fontWeight: 900, color: tokens.black, margin: "0 0 28px", letterSpacing: "-0.5px" }}>
         Account settings
       </h3>
 
@@ -294,6 +294,7 @@ function SettingsTab({ user, onUpdate }) {
           cursor: loading ? "not-allowed" : "pointer",
           transition: "background 0.2s",
           opacity: loading ? 0.7 : 1,
+          width: { xs: "100%", sm: "auto" }
         }}
       >
         {loading ? "Saving..." : saved ? "Saved ✓" : "Save changes"}
@@ -325,6 +326,7 @@ function SettingsTab({ user, onUpdate }) {
             fontSize: "13px",
             fontWeight: 600,
             cursor: "pointer",
+            width: { xs: "100%", sm: "auto" }
           }}
           onClick={async () => {
             if (!confirm('Delete your account? This action cannot be undone.')) return;
@@ -449,21 +451,21 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: "100vh", background: tokens.cream }}>
+      <div style={{ minHeight: "100vh", background: tokens.cream, display: "flex", flexDirection: "column" }}>
         <Header />
-        <div style={{ padding: "56px 48px", textAlign: "center" }}>
+        <div style={{ padding: "56px 20px", textAlign: "center", flex: 1 }}>
           Loading profile...
         </div>
-        {/* <Footer /> */}
+        <Footer />
       </div>
     );
   }
 
   if (!user) {
     return (
-      <div style={{ minHeight: "100vh", background: tokens.cream }}>
+      <div style={{ minHeight: "100vh", background: tokens.cream, display: "flex", flexDirection: "column" }}>
         <Header />
-        <div style={{ padding: "56px 48px", textAlign: "center" }}>
+        <div style={{ padding: "56px 20px", textAlign: "center", flex: 1 }}>
           Error loading profile. Please try again.
         </div>
         <Footer />
@@ -472,15 +474,18 @@ export default function ProfilePage() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: tokens.cream }}>
+    <div style={{ minHeight: "100vh", background: tokens.cream, display: "flex", flexDirection: "column" }}>
       <Header />
 
-      <main style={{ padding: "24px max(16px, 4vw) 80px" }}>
+      <main style={{ flex: 1, padding: "24px 20px 80px", maxWidth: "1200px", margin: "0 auto", width: "100%" }}>
+        {/* Profile Header - Mobile Responsive */}
         <div
           style={{
             display: "flex",
-            gap: "32px",
-            alignItems: "flex-start",
+            flexDirection: { xs: "column", sm: "row" },
+            gap: "24px",
+            alignItems: { xs: "center", sm: "flex-start" },
+            textAlign: { xs: "center", sm: "left" },
             marginBottom: "56px",
             paddingBottom: "48px",
             borderBottom: "1px solid #e0dbd0",
@@ -488,15 +493,15 @@ export default function ProfilePage() {
         >
           <div
             style={{
-              width: "88px",
-              height: "88px",
+              width: "clamp(80px, 15vw, 88px)",
+              height: "clamp(80px, 15vw, 88px)",
               borderRadius: "50%",
               background: user.avatarColor || "#e8e3db",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               fontFamily: "'Georgia', serif",
-              fontSize: "36px",
+              fontSize: "clamp(32px, 8vw, 36px)",
               fontWeight: 900,
               color: tokens.black,
               flexShrink: 0,
@@ -512,20 +517,20 @@ export default function ProfilePage() {
                 fontSize: "clamp(28px, 6vw, 64px)",
                 fontWeight: 900,
                 color: tokens.black,
-                margin: "0 0 6px",
+                margin: "0 0 8px",
                 letterSpacing: "-1.5px",
               }}
             >
               {user.name}
             </h1>
-            <p style={{ fontFamily: "sans-serif", fontSize: "14px", color: "#888", margin: "0 0 10px" }}>
+            <p style={{ fontFamily: "sans-serif", fontSize: "clamp(12px, 3.5vw, 14px)", color: "#888", margin: "0 0 12px" }}>
               {user.email} · Member since {user.joined || "April 2026"}
             </p>
-            <p style={{ fontFamily: "sans-serif", fontSize: "14px", color: "#555", lineHeight: 1.6, margin: "0 0 20px", maxWidth: "480px" }}>
+            <p style={{ fontFamily: "sans-serif", fontSize: "clamp(13px, 4vw, 14px)", color: "#555", lineHeight: 1.6, margin: "0 0 24px", maxWidth: "480px" }}>
               {user.bio || "No bio yet. Click 'Edit profile' to add one."}
             </p>
 
-            <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+            <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", justifyContent: { xs: "center", sm: "flex-start" } }}>
               {user.stats?.map((s) => (
                 <div
                   key={s.label}
@@ -533,16 +538,16 @@ export default function ProfilePage() {
                     background: tokens.white,
                     border: "1px solid #e0dbd0",
                     borderRadius: "999px",
-                    padding: "12px 24px",
+                    padding: "10px 20px",
                     display: "flex",
                     alignItems: "center",
                     gap: "8px",
                   }}
                 >
-                  <span style={{ fontFamily: "'Georgia', serif", fontSize: "16px", fontWeight: 900, color: tokens.black }}>
+                  <span style={{ fontFamily: "'Georgia', serif", fontSize: "clamp(14px, 4vw, 16px)", fontWeight: 900, color: tokens.black }}>
                     {s.value}
                   </span>
-                  <span style={{ fontFamily: "sans-serif", fontSize: "12px", color: "#888" }}>
+                  <span style={{ fontFamily: "sans-serif", fontSize: "clamp(10px, 3vw, 12px)", color: "#888" }}>
                     {s.label}
                   </span>
                 </div>
@@ -550,31 +555,37 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          <button
-            onClick={() => setActiveTab("Settings")}
-            style={{
-              background: "none",
-              border: "1px solid #d8d3cb",
-              borderRadius: "999px",
-              padding: "10px 20px",
-              fontFamily: "sans-serif",
-              fontSize: "13px",
-              fontWeight: 600,
-              color: tokens.black,
-              cursor: "pointer",
-              flexShrink: 0,
-            }}
-          >
-            Edit profile
-          </button>
+          <div>
+            <button
+              onClick={() => setActiveTab("Settings")}
+              style={{
+                background: "none",
+                border: "1px solid #d8d3cb",
+                borderRadius: "999px",
+                padding: "10px 20px",
+                fontFamily: "sans-serif",
+                fontSize: "13px",
+                fontWeight: 600,
+                color: tokens.black,
+                cursor: "pointer",
+                width: "100%",
+                whiteSpace: "nowrap",
+              }}
+            >
+              Edit profile
+            </button>
+          </div>
         </div>
 
+        {/* Tabs - Mobile Responsive */}
         <div
           style={{
             display: "flex",
             gap: "0",
             borderBottom: "1px solid #e0dbd0",
             marginBottom: "36px",
+            overflowX: "auto",
+            WebkitOverflowScrolling: "touch",
           }}
         >
           {tabs.map((tab) => (
@@ -585,14 +596,15 @@ export default function ProfilePage() {
                 background: "none",
                 border: "none",
                 borderBottom: activeTab === tab ? `2px solid ${tokens.black}` : "2px solid transparent",
-                padding: "12px 24px",
+                padding: "12px 16px",
                 fontFamily: "sans-serif",
-                fontSize: "13px",
+                fontSize: "clamp(12px, 3.5vw, 13px)",
                 fontWeight: 600,
                 color: activeTab === tab ? tokens.black : "#999",
                 cursor: "pointer",
                 letterSpacing: "0.3px",
                 marginBottom: "-1px",
+                whiteSpace: "nowrap",
               }}
             >
               {tab}
@@ -600,7 +612,7 @@ export default function ProfilePage() {
           ))}
         </div>
 
-        <div style={{ maxWidth: "720px" }}>
+        <div style={{ width: "100%", maxWidth: "720px", margin: "0 auto" }}>
           {error && (
             <div style={{
               background: "#fee",
@@ -662,7 +674,7 @@ export default function ProfilePage() {
         </div>
       </main>
 
-      {/* <Footer /> */}
+      <Footer />
     </div>
   );
 }
