@@ -32,6 +32,15 @@ def create_app():
         methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         vary_header=True
     )
+
+    # Force CORS headers on every response
+    @app.after_request
+    def add_cors_headers(response):
+        response.headers['Access-Control-Allow-Origin'] = 'https://eventra-app-koyx.vercel.app'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Admin-Secret'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
+        response.headers['Access-Control-Allow-Credentials'] = 'true'
+        return response
     
     db.init_app(app)
     migrate.init_app(app, db)
