@@ -1,4 +1,6 @@
 venv/
 __pycache__/
 *.pyc
-eventra.db
+# eventra.db
+# eventra.db
+# eventra.db
